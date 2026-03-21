@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
-import { initSDK, getAccelerationMode } from './runanywhere';
-import { ChatTab } from './components/ChatTab';
-import { VisionTab } from './components/VisionTab';
-import { VoiceTab } from './components/VoiceTab';
-import { ToolsTab } from './components/ToolsTab';
-
-type Tab = 'chat' | 'vision' | 'voice' | 'tools';
+import { initSDK } from './runanywhere';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { ChatInterface } from './components/ChatInterface';
+import { AnalysisPanel } from './components/AnalysisPanel';
+import { DocumentUpload } from './components/DocumentUpload';
+import './styles/App.css';
 
 export function App() {
   const [sdkReady, setSdkReady] = useState(false);
   const [sdkError, setSdkError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>('chat');
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   useEffect(() => {
     initSDK()
@@ -20,53 +19,92 @@ export function App() {
 
   if (sdkError) {
     return (
-      <div className="app-loading">
-        <h2>SDK Error</h2>
-        <p className="error-text">{sdkError}</p>
+      <div className="loading-screen">
+        <div className="error-card">
+          <div className="error-icon">⚠️</div>
+          <h2>Failed to Initialize</h2>
+          <p>{sdkError}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
       </div>
     );
   }
 
   if (!sdkReady) {
     return (
-      <div className="app-loading">
-        <div className="spinner" />
-        <h2>Loading RunAnywhere SDK...</h2>
-        <p>Initializing on-device AI engine</p>
+      <div className="loading-screen">
+        <div className="loading-content">
+          <div className="logo-animation">
+            <div className="orbit"></div>
+            <div className="orbit orbit-2"></div>
+            <div className="orbit orbit-3"></div>
+            <div className="core">🎓</div>
+          </div>
+          <h1 className="loading-title">EduFlow AI</h1>
+          <p className="loading-subtitle">Initializing your AI study companion...</p>
+          <div className="loading-bar">
+            <div className="loading-progress"></div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  const accel = getAccelerationMode();
-
   return (
-    <div className="app">
+    <div className="eduflow-app">
+      {/* Animated Background */}
+      <div className="background-gradient">
+        <div className="gradient-orb orb-1"></div>
+        <div className="gradient-orb orb-2"></div>
+        <div className="gradient-orb orb-3"></div>
+      </div>
+
+      {/* Main Header */}
       <header className="app-header">
-        <h1>RunAnywhere AI</h1>
-        {accel && <span className="badge">{accel === 'webgpu' ? 'WebGPU' : 'CPU'}</span>}
+        <div className="header-content">
+          <div className="logo-section">
+            <div className="logo-icon">🎓</div>
+            <div className="logo-text">
+              <h1>EduFlow AI</h1>
+              <p>Your Personal Study Companion</p>
+            </div>
+          </div>
+          
+          <div className="header-actions">
+            <button 
+              className={`mode-toggle ${!showAnalysis ? 'active' : ''}`}
+              onClick={() => setShowAnalysis(false)}
+            >
+              💬 Chat
+            </button>
+            <button 
+              className={`mode-toggle ${showAnalysis ? 'active' : ''}`}
+              onClick={() => setShowAnalysis(true)}
+            >
+              📊 Analysis
+            </button>
+          </div>
+        </div>
       </header>
 
-      <nav className="tab-bar">
-        <button className={activeTab === 'chat' ? 'active' : ''} onClick={() => setActiveTab('chat')}>
-          💬 Chat
-        </button>
-        <button className={activeTab === 'vision' ? 'active' : ''} onClick={() => setActiveTab('vision')}>
-          📷 Vision
-        </button>
-        <button className={activeTab === 'voice' ? 'active' : ''} onClick={() => setActiveTab('voice')}>
-          🎙️ Voice
-        </button>
-        <button className={activeTab === 'tools' ? 'active' : ''} onClick={() => setActiveTab('tools')}>
-          🔧 Tools
-        </button>
-      </nav>
-
-      <main className="tab-content">
-        {activeTab === 'chat' && <ChatTab />}
-        {activeTab === 'vision' && <VisionTab />}
-        {activeTab === 'voice' && <VoiceTab />}
-        {activeTab === 'tools' && <ToolsTab />}
+      {/* Main Content */}
+      <main className="app-content">
+        <ErrorBoundary>
+          {!showAnalysis ? (
+            <ChatInterface />
+          ) : (
+            <div className="analysis-layout">
+              <DocumentUpload />
+              <AnalysisPanel />
+            </div>
+          )}
+        </ErrorBoundary>
       </main>
+
+      {/* Floating Help Button */}
+      <button className="floating-help" title="How to use EduFlow AI">
+        <span>?</span>
+      </button>
     </div>
   );
 }
