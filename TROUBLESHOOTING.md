@@ -490,7 +490,76 @@ If nothing works:
 
 ---
 
-## 🎧 Getting Help
+## � Response Feedback System Issues
+
+### Issue: Feedback Buttons Not Appearing
+**Symptoms**: Like, dislike, flag buttons don't show under responses
+
+**Solutions:**
+1. **Refresh the page** (Ctrl+R or Cmd+R)
+2. **Check if response is from AI**
+   - Buttons only appear on AI responses
+   - User messages and system messages don't have buttons
+3. **Clear browser cache**
+   - DevTools → Application → Storage → Clear Site Data
+4. **Try different browser** to isolate issue
+5. **Check browser console** for JavaScript errors (F12 → Console)
+
+### Issue: Feedback Not Saving
+**Symptoms**: Click like/dislike/flag, but feedback disappears when page refreshes
+
+**Solutions:**
+1. **Check browser storage** is enabled
+   - Settings → Privacy → Cookies and site data → Allow
+   - Not in Incognito mode
+2. **Ensure session storage is active**
+   - Check no browser extensions blocking storage
+3. **Try disabling browser extensions**
+   - Go to extension settings and disable all
+   - Refresh page and try again
+4. **Use different browser** to test
+
+### Issue: Copy Button Not Working
+**Symptoms**: Click copy button but text doesn't copy to clipboard
+
+**Solutions:**
+1. **Check browser permissions**
+   - DevTools → Console → Check for permission errors
+   - Grant clipboard permission if prompted
+2. **Try using keyboard shortcut** (Ctrl+C / Cmd+C) instead
+3. **Check for browser extensions** blocking clipboard access
+4. **Use HTTPS** version of site (clipboard access requires HTTPS)
+5. **Try different browser**
+
+### Issue: Flag Menu Not Opening
+**Symptoms**: Click three-dot (⋮) menu but dropdown doesn't show
+
+**Solutions:**
+1. **Give it a moment** - Menu might be loading
+2. **Click elsewhere first** to close any open menu
+3. **Try clicking again** on the three-dot button
+4. **Check CSS loading** - DevTools → Elements → Check styles
+5. **Refresh page** if menu still not appearing
+
+### Issue: Listen (Text-to-Speech) Not Working
+**Symptoms**: Click speaker button but hear nothing
+
+**Solutions:**
+1. **Check device volume** - Increase volume on device
+2. **Check browser volume** - Tab volume not muted (Chrome: right-click tab)
+3. **Check OS permissions** - Some systems require speech permission
+4. **Try different browser** - Not all browsers support Web Speech API
+5. **Check browser console** for errors (F12 → Console)
+
+**Note:** Text-to-speech availability varies by browser:
+- ✅ Chrome: Full support
+- ✅ Firefox: Full support
+- ✅ Safari: Full support
+- ⚠️ Edge: Might require settings adjustment
+
+---
+
+## �🎧 Getting Help
 
 ### Resources
 - 📖 Read [Features Guide](FEATURES.md)

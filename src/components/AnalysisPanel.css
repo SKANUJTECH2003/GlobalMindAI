@@ -56,7 +56,7 @@
 }
 
 .analysis-type-card.active {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(59, 130, 246, 0.2));
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(201, 169, 97, 0.2));
   border-color: var(--purple);
   box-shadow: 0 0 24px var(--glow);
 }
@@ -81,7 +81,7 @@
 /* Selected Document Card */
 .selected-document-card {
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(59, 130, 246, 0.1));
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(201, 169, 97, 0.1));
   border: 1px solid var(--purple);
   border-radius: 16px;
   margin-bottom: 2rem;
@@ -259,7 +259,7 @@
 
 .topic-card:hover {
   transform: translateX(4px);
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.2);
 }
 
 .topic-card h4 {
@@ -390,7 +390,7 @@
 .document-item:hover {
   border-color: var(--purple);
   transform: translateX(4px);
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.2);
 }
 
 .doc-details h4 {
@@ -475,11 +475,11 @@ body.theme-light .analysis-type-card {
 }
 
 body.theme-light .analysis-type-card:hover {
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.1);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.1);
 }
 
 body.theme-light .analysis-type-card.active {
-  background: rgba(124, 58, 237, 0.08);
+  background: rgba(212, 175, 55, 0.08);
   border-color: var(--purple);
 }
 
@@ -494,7 +494,7 @@ body.theme-light .topic-card {
 }
 
 body.theme-light .topic-card:hover {
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.1);
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.1);
 }
 
 body.theme-light .flashcard {

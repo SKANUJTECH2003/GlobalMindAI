@@ -1,15 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './MessageFormatter.css';
+
+interface FeedbackData {
+  rating?: 'like' | 'dislike' | null;
+  flagged?: boolean;
+}
 
 interface MessageFormatterProps {
   content: string;
   messageId: string;
   onRegenerate?: () => void;
   isAI?: boolean;
+  onFeedback?: (feedback: FeedbackData) => void;
+  initialFeedback?: FeedbackData;
 }
 
-export function MessageFormatter({ content, messageId, onRegenerate, isAI = false }: MessageFormatterProps) {
+export function MessageFormatter({ 
+  content, 
+  messageId, 
+  onRegenerate, 
+  isAI = false,
+  onFeedback,
+  initialFeedback
+}: MessageFormatterProps) {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [copiedResponse, setCopiedResponse] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [feedback, setFeedback] = useState<FeedbackData>(initialFeedback || {});
+  const [showFlagMenu, setShowFlagMenu] = useState(false);
+  const synth = useRef<SpeechSynthesis | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Parse message content and format it
   const formatMessage = (text: string) => {
@@ -151,51 +171,90 @@ export function MessageFormatter({ content, messageId, onRegenerate, isAI = fals
 
   // Format inline text (bold, italic, code, links)
   const formatInlineText = (text: string): (string | React.JSX.Element)[] => {
-    const parts: (string | React.JSX.Element)[] = [];
-    let remaining = text;
-    let key = 0;
-
-    // Inline code: `code`
-    remaining = remaining.replace(/`([^`]+)`/g, (match, code) => {
-      parts.push(<code key={`inline-${key++}`} className="inline-code">{code}</code>);
-      return `__PART_${parts.length - 1}__`;
-    });
-
-    // Bold: **text** or __text__
-    remaining = remaining.replace(/\*\*([^*]+)\*\*|__([^_]+)__/g, (match, bold1, bold2) => {
-      parts.push(<strong key={`bold-${key++}`} className="formatted-bold">{bold1 || bold2}</strong>);
-      return `__PART_${parts.length - 1}__`;
-    });
-
-    // Italic: *text* or _text_
-    remaining = remaining.replace(/\*([^*]+)\*|_([^_]+)_/g, (match, italic1, italic2) => {
-      parts.push(<em key={`italic-${key++}`} className="formatted-italic">{italic1 || italic2}</em>);
-      return `__PART_${parts.length - 1}__`;
-    });
-
-    // Links: [text](url)
-    remaining = remaining.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
-      parts.push(
-        <a key={`link-${key++}`} href={url} target="_blank" rel="noopener noreferrer" className="formatted-link">
-          {text}
-        </a>
-      );
-      return `__PART_${parts.length - 1}__`;
-    });
-
-    // Reconstruct text with formatted parts
     const result: (string | React.JSX.Element)[] = [];
-    const segments = remaining.split(/(__PART_\d+__)/);
+    let key = 0;
     
-    segments.forEach((segment, idx) => {
-      const partMatch = segment.match(/__PART_(\d+)__/);
-      if (partMatch) {
-        result.push(parts[parseInt(partMatch[1])]);
-      } else if (segment) {
-        result.push(segment);
+    // Create a map of all patterns to find and replace
+    interface Match {
+      index: number;
+      length: number;
+      element: React.JSX.Element;
+    }
+    
+    const matches: Match[] = [];
+    
+    // Find inline code: `code`
+    const codeRegex = /`([^`]+)`/g;
+    let match;
+    while ((match = codeRegex.exec(text)) !== null) {
+      matches.push({
+        index: match.index,
+        length: match[0].length,
+        element: <code key={`inline-${key++}`} className="inline-code">{match[1]}</code>
+      });
+    }
+    
+    // Find bold: **text** or __text__
+    const boldRegex = /\*\*([^*]+)\*\*/g;
+    while ((match = boldRegex.exec(text)) !== null) {
+      matches.push({
+        index: match.index,
+        length: match[0].length,
+        element: <strong key={`bold-${key++}`} className="formatted-bold">{match[1]}</strong>
+      });
+    }
+    
+    // Find italic: *text* or _text_ (but not part of bold or other formatting)
+    const italicRegex = /(?<!\*)\*([^*]+)\*(?!\*)/g;
+    while ((match = italicRegex.exec(text)) !== null) {
+      matches.push({
+        index: match.index,
+        length: match[0].length,
+        element: <em key={`italic-${key++}`} className="formatted-italic">{match[1]}</em>
+      });
+    }
+    
+    // Find links: [text](url)
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    while ((match = linkRegex.exec(text)) !== null) {
+      matches.push({
+        index: match.index,
+        length: match[0].length,
+        element: <a key={`link-${key++}`} href={match[2]} target="_blank" rel="noopener noreferrer" className="formatted-link">{match[1]}</a>
+      });
+    }
+    
+    // Sort matches by index
+    matches.sort((a, b) => a.index - b.index);
+    
+    // Build result by processing matches in order
+    let lastIndex = 0;
+    for (const m of matches) {
+      // Add text before this match
+      if (m.index > lastIndex) {
+        const textBefore = text.substring(lastIndex, m.index);
+        if (textBefore) {
+          result.push(textBefore);
+        }
       }
-    });
-
+      // Add the formatted element
+      result.push(m.element);
+      lastIndex = m.index + m.length;
+    }
+    
+    // Add any remaining text
+    if (lastIndex < text.length) {
+      const textAfter = text.substring(lastIndex);
+      if (textAfter) {
+        result.push(textAfter);
+      }
+    }
+    
+    // If no matches found, return the original text
+    if (result.length === 0) {
+      return [text];
+    }
+    
     return result;
   };
 
@@ -210,20 +269,155 @@ export function MessageFormatter({ content, messageId, onRegenerate, isAI = fals
     }
   };
 
+  // Text-to-speech for AI responses
+  const toggleSpeak = () => {
+    if (!synth.current) {
+      synth.current = typeof window !== 'undefined' ? window.speechSynthesis : null;
+    }
+
+    if (!synth.current) {
+      console.error('Speech Synthesis not supported');
+      return;
+    }
+
+    if (isPlaying) {
+      // Stop speaking
+      synth.current.cancel();
+      setIsPlaying(false);
+      utteranceRef.current = null;
+    } else {
+      // Extract plain text from formatted content
+      const plainText = content
+        .replace(/[*_`~]/g, '') // Remove markdown symbols
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); // Convert links to plain text
+
+      const utterance = new SpeechSynthesisUtterance(plainText);
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      utterance.onstart = () => setIsPlaying(true);
+      utterance.onend = () => setIsPlaying(false);
+      utterance.onerror = () => setIsPlaying(false);
+
+      utteranceRef.current = utterance;
+      synth.current.speak(utterance);
+    }
+  };
+
+  // Copy entire response to clipboard
+  const copyResponse = async () => {
+    try {
+      const plainText = content
+        .replace(/[*_`~]/g, '') // Remove markdown symbols
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); // Convert links to plain text
+      
+      await navigator.clipboard.writeText(plainText);
+      setCopiedResponse(true);
+      setTimeout(() => setCopiedResponse(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy response:', err);
+    }
+  };
+
+  // Handle like feedback
+  const handleLike = () => {
+    const newRating = feedback.rating === 'like' ? null : 'like';
+    const newFeedback = { ...feedback, rating: newRating };
+    setFeedback(newFeedback);
+    onFeedback?.(newFeedback);
+  };
+
+  // Handle dislike feedback
+  const handleDislike = () => {
+    const newRating = feedback.rating === 'dislike' ? null : 'dislike';
+    const newFeedback = { ...feedback, rating: newRating };
+    setFeedback(newFeedback);
+    onFeedback?.(newFeedback);
+  };
+
+  // Handle flag feedback
+  const handleFlag = () => {
+    const newFeedback = { ...feedback, flagged: !feedback.flagged };
+    setFeedback(newFeedback);
+    onFeedback?.(newFeedback);
+    setShowFlagMenu(false);
+  };
+
   return (
     <div className="message-formatter">
       {formatMessage(content)}
       
-      {/* Regenerate button for AI messages */}
-      {isAI && onRegenerate && (
-        <button 
-          className="regenerate-btn"
-          onClick={onRegenerate}
-          title="Regenerate response"
-        >
-          🔄 Regenerate
-        </button>
-      )}
+      {/* Message Action Buttons for AI responses */}
+      <div className="message-actions">
+        {isAI && (
+          <>
+            <button
+              className="action-btn copy-btn"
+              onClick={copyResponse}
+              title="Copy response"
+            >
+              {copiedResponse ? '✅' : '📋'} {copiedResponse ? 'Copied!' : 'Copy'}
+            </button>
+
+            <button
+              className={`action-btn like-btn ${feedback.rating === 'like' ? 'active' : ''}`}
+              onClick={handleLike}
+              title={feedback.rating === 'like' ? 'Remove like' : 'Like this response'}
+            >
+              👍
+            </button>
+
+            <button
+              className={`action-btn dislike-btn ${feedback.rating === 'dislike' ? 'active' : ''}`}
+              onClick={handleDislike}
+              title={feedback.rating === 'dislike' ? 'Remove dislike' : 'Dislike this response'}
+            >
+              👎
+            </button>
+
+            <div className="flag-menu-container">
+              <button
+                className={`action-btn flag-btn ${feedback.flagged ? 'active' : ''}`}
+                onClick={() => setShowFlagMenu(!showFlagMenu)}
+                title="More options"
+              >
+                ⋮
+              </button>
+              
+              {showFlagMenu && (
+                <div className="flag-menu">
+                  <button
+                    className={`flag-option ${feedback.flagged ? 'active' : ''}`}
+                    onClick={handleFlag}
+                  >
+                    <span className="flag-icon">{feedback.flagged ? '🚩' : '🚩'}</span>
+                    <span>Flag Response</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button
+              className={`action-btn speak-btn ${isPlaying ? 'playing' : ''}`}
+              onClick={toggleSpeak}
+              title={isPlaying ? 'Stop speaking' : 'Listen to response'}
+            >
+              {isPlaying ? '🔊' : '🔉'}
+            </button>
+          </>
+        )}
+        
+        {isAI && onRegenerate && (
+          <button 
+            className="regenerate-btn"
+            onClick={onRegenerate}
+            title="Regenerate response"
+          >
+            🔄 Regenerate
+          </button>
+        )}
+      </div>
     </div>
   );
 }

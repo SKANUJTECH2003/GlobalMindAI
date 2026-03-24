@@ -3,70 +3,37 @@
  */
 
 /**
- * Enhanced prompt that asks for beautifully formatted responses with emojis
+ * Enhanced prompt - Extremely minimal to avoid generating markers
  */
 export function createEnhancedPrompt(basePrompt: string): string {
-  const enhancementInstructions = `
-
----
-📝 FORMATTING INSTRUCTIONS:
-Please format your response beautifully with:
-1. Use relevant emojis at the start of each section
-2. Use clear headers with emojis (e.g., "📚 Key Concepts:", "💡 Examples:", "⚠️ Important Notes:")
-3. Use bullet points (- ) for lists
-4. Use **bold** for important terms
-5. Add line breaks between sections for readability
-6. Use numbered lists (1. 2. 3.) for steps or sequences
-7. Use 🎯, 💼, 🔑, ✨, 🚀, 📌, 🎓, 🧠, 📖, 🔍, ⭐, 👍 emojis liberally
-8. Make it visually appealing and easy to scan
-
-Format your response EXACTLY like this structure:
-- Start with a brief intro
-- Use section headers with emojis
-- Use bullet points for details
-- End with a summary if needed
-
-Now provide your response:
-`;
-  
-  return basePrompt + enhancementInstructions;
+  return basePrompt;  // No extra instructions - let model respond naturally
 }
 
 /**
- * Post-process response to ensure proper formatting with emojis
+ * Post-process response - Aggressively remove all _PART markers and related garbage
  */
 export function formatResponse(text: string): string {
-  // Clean up text
   let formatted = text
     .trim()
-    .replace(/\n\n\n+/g, '\n\n') // Remove excessive line breaks
-    .replace(/(\d+\.\s)/g, '\n$1'); // Ensure numbered lists are on new lines
+    // Remove ALL _PART marker variants (more comprehensive patterns)
+    // Matches: _PART0__, _PART1__, _PARTO_, PART0, etc.
+    .replace(/\(_*PART[A-Z0-9]*_*\)/gi, '')         // (_PART0_), (PART0), etc.
+    .replace(/_*PART[A-Z0-9]*_*:/gi, '')             // _PART0_:, PART0:, etc.
+    .replace(/_+PART[A-Z0-9]+_+/gi, '')              // _PART0__, _PART1__, etc.
+    .replace(/\bPART[0-9]+\b/gi, '')                 // PART0, PART1 as standalone words
+    // Clean up leftover garbage patterns
+    .replace(/\(\s*\)/g, '')                         // Empty parentheses
+    .replace(/:\s*$/gm, '')                          // Trailing colons at line end
+    .replace(/^\s*[-_]+\s*$/gm, '')                  // Lines with only dashes/underscores
+    .replace(/\n\n\n+/g, '\n\n')                     // Remove excessive line breaks
+    .replace(/^\s+$/gm, '');                         // Remove whitespace-only lines
   
-  // Add section headers if not present
-  if (!formatted.includes('📚') && !formatted.includes('💡') && !formatted.includes('🎯')) {
-    // Try to detect sections and add emojis
-    formatted = formatted
-      .replace(/^(key[\s\w]*:?)/gim, '🔑 **$1**')
-      .replace(/^(important[\s\w]*:?)/gim, '⚠️ **$1**')
-      .replace(/^(example[\s\w]*:?)/gim, '💡 **Example:**')
-      .replace(/^(steps?[\s\w]*:?)/gim, '🚀 **$1**')
-      .replace(/^(summary[\s\w]*:?)/gim, '📋 **Summary:**')
-      .replace(/^(concept[\s\w]*:?)/gim, '📚 **$1**')
-      .replace(/^(definition[\s\w]*:?)/gim, '📖 **$1**')
-      .replace(/^(tips?[\s\w]*:?)/gim, '💼 **$1**')
-      .replace(/^(remember[\s\w]*:?)/gim, '🧠 **$1**')
-      .replace(/^(note[\s\w]*:?)/gim, '📌 **$1**');
-  }
-
-  // Convert plain lists to bullet points
-  formatted = formatted.replace(/^([a-zA-Z][a-zA-Z0-9\s\-]*?)(?=\n|$)/gm, (match) => {
-    // Check if it looks like a list item
-    if (match.length > 3 && !match.includes('**')) {
-      return '• ' + match;
-    }
-    return match;
-  });
-
+  // Ensure newlines before numbered sections for list rendering
+  formatted = formatted.replace(/([^:\n])(\*{0,2}\d+\.?\s)/g, '$1\n$2');
+  
+  // Ensure newlines before bullet points
+  formatted = formatted.replace(/([^\n])(\s+[-•*]\s+)/g, '$1\n$2');
+  
   return formatted;
 }
 

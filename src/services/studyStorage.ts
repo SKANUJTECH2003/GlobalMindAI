@@ -65,8 +65,25 @@ interface MindMapNode {
   level: number;
 }
 
+interface ChatMessage {
+  id: string;
+  sessionId: string;
+  type: 'user' | 'ai' | 'system';
+  content: string;
+  timestamp: number;
+}
+
+interface ChatSession {
+  id: string;
+  title: string;
+  createdAt: number;
+  updatedAt: number;
+  documentId?: string;
+  documentName?: string;
+}
+
 const DB_NAME = 'EduFlowDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 class StudyStorageService {
   private db: IDBDatabase | null = null;
@@ -107,6 +124,14 @@ class StudyStorageService {
         if (!db.objectStoreNames.contains('mindmaps')) {
           const mindmapStore = db.createObjectStore('mindmaps', { keyPath: 'id' });
           mindmapStore.createIndex('documentId', 'documentId', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('chatSessions')) {
+          const sessionStore = db.createObjectStore('chatSessions', { keyPath: 'id' });
+          sessionStore.createIndex('updatedAt', 'updatedAt', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('chatMessages')) {
+          const messageStore = db.createObjectStore('chatMessages', { keyPath: 'id' });
+          messageStore.createIndex('sessionId', 'sessionId', { unique: false });
         }
       };
     });
@@ -263,6 +288,111 @@ class StudyStorageService {
     
     return csv;
   }
+
+  // ============ CHAT PERSISTENCE METHODS ============
+
+  // Save chat session
+  async saveChatSession(session: ChatSession): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    const tx = this.db.transaction('chatSessions', 'readwrite');
+    const store = tx.objectStore('chatSessions');
+    await store.put(session);
+  }
+
+  // Get all chat sessions sorted by most recent
+  async getAllChatSessions(): Promise<ChatSession[]> {
+    if (!this.db) throw new Error('Database not initialized');
+    return new Promise((resolve, reject) => {
+      const tx = this.db!.transaction('chatSessions', 'readonly');
+      const store = tx.objectStore('chatSessions');
+      const index = store.index('updatedAt');
+      const request = index.getAll();
+      request.onsuccess = () => {
+        const results: ChatSession[] = request.result;
+        results.sort((a, b) => b.updatedAt - a.updatedAt);
+        resolve(results);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Get single chat session
+  async getChatSession(sessionId: string): Promise<ChatSession | undefined> {
+    if (!this.db) throw new Error('Database not initialized');
+    return new Promise((resolve, reject) => {
+      const tx = this.db!.transaction('chatSessions', 'readonly');
+      const store = tx.objectStore('chatSessions');
+      const request = store.get(sessionId);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Delete chat session and all its messages
+  async deleteChatSession(sessionId: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    
+    // Delete session
+    let tx = this.db.transaction('chatSessions', 'readwrite');
+    let store = tx.objectStore('chatSessions');
+    await store.delete(sessionId);
+
+    // Delete all messages for this session
+    tx = this.db.transaction('chatMessages', 'readwrite');
+    store = tx.objectStore('chatMessages');
+    const index = store.index('sessionId');
+    const range = IDBKeyRange.only(sessionId);
+    const request = index.openCursor(range);
+    return new Promise((resolve, reject) => {
+      request.onsuccess = (event) => {
+        const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
+        if (cursor) {
+          cursor.delete();
+          cursor.continue();
+        } else {
+          resolve();
+        }
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Save chat message
+  async saveChatMessage(message: ChatMessage): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    const tx = this.db.transaction('chatMessages', 'readwrite');
+    const store = tx.objectStore('chatMessages');
+    await store.put(message);
+  }
+
+  // Get all messages for a session
+  async getChatMessages(sessionId: string): Promise<ChatMessage[]> {
+    if (!this.db) throw new Error('Database not initialized');
+    return new Promise((resolve, reject) => {
+      const tx = this.db!.transaction('chatMessages', 'readonly');
+      const store = tx.objectStore('chatMessages');
+      const index = store.index('sessionId');
+      const request = index.getAll(sessionId);
+      request.onsuccess = () => {
+        const results: ChatMessage[] = request.result;
+        results.sort((a, b) => a.timestamp - b.timestamp);
+        resolve(results);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Clear all chat data
+  async clearAllChatData(): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    let tx = this.db.transaction('chatSessions', 'readwrite');
+    let store = tx.objectStore('chatSessions');
+    await store.clear();
+
+    tx = this.db.transaction('chatMessages', 'readwrite');
+    store = tx.objectStore('chatMessages');
+    await store.clear();
+  }
 }
 
 // Singleton instance
@@ -278,4 +408,6 @@ export type {
   Flashcard,
   MindMap,
   MindMapNode,
+  ChatMessage,
+  ChatSession,
 };

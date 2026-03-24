@@ -20,6 +20,7 @@ export function EduFlowTab() {
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState<string>('');
+  const [hoveredDocId, setHoveredDocId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const analysisInProgressRef = useRef<boolean>(false); // Guard against multiple calls
 
@@ -492,6 +493,8 @@ export function EduFlowTab() {
                     key={doc.id}
                     className={`document-item ${currentDocument?.id === doc.id ? 'active' : ''}`}
                     onClick={() => setCurrentDocument(doc)}
+                    onMouseEnter={() => setHoveredDocId(doc.id)}
+                    onMouseLeave={() => setHoveredDocId(null)}
                   >
                     <span className="doc-icon">
                       {doc.type === 'pdf' ? '📄' : doc.type === 'image' ? '🖼️' : '📝'}
@@ -509,11 +512,10 @@ export function EduFlowTab() {
                         cursor: 'pointer',
                         padding: '0.25rem 0.5rem',
                         fontSize: '1.2rem',
-                        opacity: 0.6,
-                        transition: 'opacity 0.2s'
+                        opacity: hoveredDocId === doc.id ? 1 : 0,
+                        pointerEvents: hoveredDocId === doc.id ? 'auto' : 'none',
+                        transition: 'opacity 0.2s ease'
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                      onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
                     >
                       🗑️
                     </button>

@@ -46,13 +46,13 @@
 
 .upload-zone:hover {
   border-color: var(--purple);
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(59, 130, 246, 0.05));
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.05), rgba(201, 169, 97, 0.05));
   transform: scale(1.02);
 }
 
 .upload-zone.dragging {
   border-color: var(--purple);
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(59, 130, 246, 0.15));
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(201, 169, 97, 0.15));
   box-shadow: 0 0 30px var(--glow);
 }
 
@@ -85,7 +85,7 @@
 .file-types {
   display: inline-block;
   padding: 0.5rem 1rem;
-  background: rgba(124, 58, 237, 0.1);
+  background: rgba(212, 175, 55, 0.1);
   border: 1px solid var(--purple);
   border-radius: 20px;
   color: var(--purple-light);
@@ -204,7 +204,7 @@
 /* Upload Tips */
 .upload-tips {
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(59, 130, 246, 0.05));
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.05), rgba(201, 169, 97, 0.05));
   border: 1px solid var(--border);
   border-radius: 16px;
   margin-bottom: 1rem;
@@ -244,7 +244,7 @@
 
 .sample-file-info code {
   padding: 0.25rem 0.5rem;
-  background: rgba(124, 58, 237, 0.2);
+  background: rgba(212, 175, 55, 0.2);
   border: 1px solid var(--purple);
   border-radius: 6px;
   color: var(--purple-light);
@@ -299,18 +299,18 @@ body.theme-light .document-upload {
 
 body.theme-light .upload-zone {
   background: #ffffff;
-  border-color: rgba(124, 58, 237, 0.2);
+  border-color: rgba(212, 175, 55, 0.2);
 }
 
 body.theme-light .upload-zone:hover {
-  background: rgba(124, 58, 237, 0.03);
+  background: rgba(212, 175, 55, 0.03);
   border-color: var(--purple);
 }
 
 body.theme-light .upload-zone.dragging {
-  background: rgba(124, 58, 237, 0.1);
+  background: rgba(212, 175, 55, 0.1);
   border-color: var(--purple);
-  box-shadow: 0 0 30px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
 }
 
 body.theme-light .upload-icon {
@@ -319,19 +319,19 @@ body.theme-light .upload-icon {
 }
 
 body.theme-light .file-types {
-  background: rgba(124, 58, 237, 0.1);
+  background: rgba(212, 175, 55, 0.1);
   border-color: var(--purple);
   color: var(--purple);
 }
 
 body.theme-light .upload-spinner {
-  border-color: rgba(124, 58, 237, 0.1);
+  border-color: rgba(212, 175, 55, 0.1);
   border-top-color: var(--purple);
 }
 
 body.theme-light .upload-tips {
-  background: rgba(124, 58, 237, 0.04);
-  border-color: rgba(124, 58, 237, 0.2);
+  background: rgba(212, 175, 55, 0.04);
+  border-color: rgba(212, 175, 55, 0.2);
 }
 
 body.theme-light .document-upload::-webkit-scrollbar {

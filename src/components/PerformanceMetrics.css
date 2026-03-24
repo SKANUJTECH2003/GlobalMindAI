@@ -100,7 +100,7 @@
 .metric-value {
   font-size: 14px;
   font-weight: 700;
-  color: var(--accent-color, #7c3aed);
+  color: var(--accent-color, #d4af37);
   letter-spacing: 0.2px;
 }
 
@@ -112,8 +112,8 @@
 }
 
 .metrics-reset {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(59, 130, 246, 0.2));
-  border: 1px solid rgba(124, 58, 237, 0.3);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(201, 169, 97, 0.2));
+  border: 1px solid rgba(212, 175, 55, 0.3);
   color: var(--text-primary, #ffffff);
   padding: 6px 12px;
   border-radius: 6px;
@@ -125,8 +125,8 @@
 }
 
 .metrics-reset:hover {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(59, 130, 246, 0.3));
-  border-color: rgba(124, 58, 237, 0.5);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(201, 169, 97, 0.3));
+  border-color: rgba(212, 175, 55, 0.5);
   transform: scale(1.02);
 }
 
@@ -143,8 +143,8 @@
 }
 
 .metrics-toggle {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(59, 130, 246, 0.3));
-  border: 1px solid rgba(124, 58, 237, 0.3);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.3), rgba(201, 169, 97, 0.3));
+  border: 1px solid rgba(212, 175, 55, 0.3);
   color: var(--text-primary, #ffffff);
   width: 44px;
   height: 44px;
@@ -155,15 +155,15 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
   animation: pulse-float 3s ease-in-out infinite;
 }
 
 .metrics-toggle:hover {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.4), rgba(59, 130, 246, 0.4));
-  border-color: rgba(124, 58, 237, 0.5);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.4), rgba(201, 169, 97, 0.4));
+  border-color: rgba(212, 175, 55, 0.5);
   transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
 }
 
 @keyframes pulse-float {
@@ -197,7 +197,7 @@
 }
 
 [data-theme='light'] .metric-value {
-  color: #7c3aed;
+  color: #d4af37;
 }
 
 [data-theme='light'] .metrics-header h4 {

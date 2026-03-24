@@ -45,12 +45,12 @@
 
 /* Loading toast */
 :global(.react-hot-toast:has(svg[data-icon="loading"])) {
-  border-color: var(--purple, #7c3aed) !important;
-  border-left: 4px solid var(--purple, #7c3aed) !important;
+  border-color: var(--purple, #d4af37) !important;
+  border-left: 4px solid var(--purple, #d4af37) !important;
 }
 
 :global(.react-hot-toast:has(svg[data-icon="loading"]) svg) {
-  color: var(--purple, #7c3aed) !important;
+  color: var(--purple, #d4af37) !important;
   animation: spin 1s linear infinite;
 }
 
@@ -65,7 +65,7 @@
 
 /* Blank/info toast */
 :global(.react-hot-toast:not(:has(svg))) {
-  border-left: 4px solid var(--blue, #3b82f6) !important;
+  border-left: 4px solid var(--blue, #c9a961) !important;
 }
 
 /* Light theme overrides */

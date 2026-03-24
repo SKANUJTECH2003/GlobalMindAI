@@ -290,6 +290,78 @@ src/utils/
 
 ---
 
+## 🎯 Response Feedback System
+
+### Architecture Overview
+The feedback system allows users to rate, flag, and interact with AI responses. It integrates seamlessly with the message storage layer.
+
+```
+User Interaction (UI)
+    ↓
+MessageFormatter Component
+├─ Copy Button → Copy to clipboard
+├─ Like Button (👍) → Rate response positively
+├─ Dislike Button (👎) → Rate response negatively
+├─ Flag Menu (⋮) → Access more options
+│  └─ Flag option → Mark for moderation
+└─ Listen Button (🔉) → Text-to-speech
+    ↓
+ChatInterface Feedback Handler
+    ↓
+sessionStorage.addMessage()
+    └─ Stores ChatMessage with feedback metadata
+```
+
+### Data Model
+```typescript
+interface ChatMessage {
+  id: string;
+  type: 'user' | 'ai' | 'system';
+  content: string;
+  timestamp: number;
+  feedback?: {
+    rating?: 'like' | 'dislike' | null;      // User feedback
+    flagged?: boolean;                         // Moderation flag
+    regeneratedFrom?: string;                  // Original message ID
+  };
+}
+```
+
+### Component Implementation
+
+**MessageFormatter.tsx** - Renders feedback UI:
+```typescript
+- Displays action buttons below responses
+- Manages feedback state (like/dislike/flagged)
+- Handles UI interactions (copy, speak, etc.)
+- Calls onFeedback callback with feedback data
+- Maintains active states for feedback buttons
+```
+
+**ChatInterface.tsx** - Handles feedback callbacks:
+```typescript
+- Receives feedback updates from MessageFormatter
+- Updates message state with feedback metadata
+- Persists feedback to sessionStorage
+- Preserves feedback across chat sessions
+```
+
+### Styling (MessageFormatter.css)
+- Color-coded feedback buttons (green for like, red for dislike, amber for flag)
+- Hover effects and transitions
+- Active state indicators with glow effects
+- Responsive layout with flex wrapping
+- Dropdown menu for flag options
+
+### Use Cases
+1. **Quality Feedback**: Users like accurate responses, dislike inaccurate ones
+2. **Moderation**: Flag inappropriate or harmful content
+3. **Analytics**: Track response quality metrics
+4. **Improvement**: Use feedback to improve model behavior
+5. **User Experience**: Copy useful responses for study notes
+
+---
+
 ## 🔄 State Management
 
 ### React Component State
@@ -300,6 +372,10 @@ GlobalMindAI uses React hooks for state management (no Redux/Zustand):
 const [messages, setMessages] = useState<Message[]>([])
 const [isLoading, setIsLoading] = useState(false)
 const [currentModel, setCurrentModel] = useState<ModelType>('text')
+
+// In MessageFormatter.tsx (Feedback State)
+const [feedback, setFeedback] = useState<FeedbackData>(initialFeedback || {})
+const [showFlagMenu, setShowFlagMenu] = useState(false)
 
 // In EduFlowTab.tsx
 const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([])

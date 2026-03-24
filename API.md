@@ -724,11 +724,82 @@ updateAnalysis()
 
 ---
 
+## � Type Definitions
+
+Core TypeScript interfaces used throughout the application.
+
+### ChatMessage (Session Storage)
+
+Located in `src/services/sessionStorage.ts`
+
+```typescript
+interface ChatMessage {
+  id: string;                    // Unique message identifier
+  type: 'user' | 'ai' | 'system'; // Message type
+  content: string;               // Message text content
+  timestamp: number;             // Unix timestamp
+  feedback?: {
+    rating?: 'like' | 'dislike' | null;  // User feedback rating
+    flagged?: boolean;                     // Is response flagged?
+    regeneratedFrom?: string;              // ID of original message if regenerated
+  };
+}
+```
+
+**Usage Example:**
+```typescript
+const message: ChatMessage = {
+  id: '1234567890',
+  type: 'ai',
+  content: 'Photosynthesis is the process...',
+  timestamp: Date.now(),
+  feedback: {
+    rating: 'like',
+    flagged: false
+  }
+}
+
+// Store in session
+sessionStorage.addMessage(message)
+
+// Update feedback
+const updatedMessage: ChatMessage = {
+  ...message,
+  feedback: {
+    ...message.feedback,
+    rating: 'dislike'
+  }
+}
+sessionStorage.addMessage(updatedMessage)
+```
+
+**Feedback Field Details:**
+- `rating`: Tracks whether user liked ('like') or disliked ('dislike') the response, or no rating (null)
+- `flagged`: Boolean indicating if response was flagged for moderation
+- `regeneratedFrom`: Optional reference to the original message ID if this is a regenerated response
+
+### ChatSession
+
+```typescript
+interface ChatSession {
+  id: string;                    // Session identifier
+  title: string;                 // Session title/name
+  messages: ChatMessage[];       // Array of messages in session
+  createdAt: number;             // Creation timestamp
+  updatedAt: number;             // Last update timestamp
+  documentId?: string;           // Associated document ID
+  documentName?: string;         // Associated document name
+}
+```
+
+---
+
 ## 🔗 Related Documentation
 
 - [Architecture](ARCHITECTURE.md) - System design
 - [Features](FEATURES.md) - Feature guide
 - [Troubleshooting](TROUBLESHOOTING.md) - Common issues
+- [Changelog](CHANGELOG.md) - Version history
 
 ---
 

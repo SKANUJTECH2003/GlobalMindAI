@@ -1,6 +1,8 @@
 // Session-based Storage Service
-// All data stays in memory - clears on page refresh/server restart
-// NO persistent storage - fresh start every session
+// In-memory cache with persistent backup to IndexedDB
+// Chat history survives server restarts
+
+import { studyStorage } from './studyStorage';
 
 interface StudyDocument {
   id: string;
@@ -54,6 +56,11 @@ interface ChatMessage {
   type: 'user' | 'ai' | 'system';
   content: string;
   timestamp: number;
+  feedback?: {
+    rating?: 'like' | 'dislike' | null;
+    flagged?: boolean;
+    regeneratedFrom?: string; // ID of message this was regenerated from
+  };
 }
 
 interface ChatSession {
@@ -80,7 +87,43 @@ class SessionStorageService {
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
-    console.log('📦 Session Storage initialized - data will clear on page refresh');
+    
+    try {
+      // Initialize IndexedDB
+      await studyStorage.initialize();
+      
+      // Load all chat sessions from persistent storage
+      const persistedSessions = await studyStorage.getAllChatSessions();
+      console.log(`📦 Loaded ${persistedSessions.length} chat sessions from persistent storage`);
+      
+      // Load all messages and recreate sessions with messages
+      for (const sessionData of persistedSessions) {
+        const messages = await studyStorage.getChatMessages(sessionData.id);
+        const session: ChatSession = {
+          ...sessionData,
+          messages,
+        };
+        this.chatSessions.set(session.id, session);
+      }
+      
+      // Set current session to most recent
+      if (this.chatSessions.size > 0) {
+        const sessions = Array.from(this.chatSessions.values())
+          .sort((a, b) => b.updatedAt - a.updatedAt);
+        this.currentSessionId = sessions[0].id;
+        console.log('💬 Session Storage initialized - loaded from IndexedDB');
+      } else {
+        // Create new session if none exist
+        this.createChatSession();
+        console.log('💬 Session Storage initialized - created new session');
+      }
+    } catch (error) {
+      console.error('Failed to initialize persistent storage:', error);
+      // Fallback to fresh session
+      this.createChatSession();
+      console.log('💬 Session Storage fallback - using in-memory only');
+    }
+    
     this.initialized = true;
   }
 
@@ -242,6 +285,17 @@ class SessionStorageService {
     
     this.chatSessions.set(sessionId, session);
     this.currentSessionId = sessionId;
+    
+    // Persist to IndexedDB
+    studyStorage.saveChatSession({
+      id: session.id,
+      title: session.title,
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt,
+      documentId: session.documentId,
+      documentName: session.documentName,
+    }).catch(err => console.error('Failed to save chat session:', err));
+    
     console.log('💬 New chat session created:', sessionId);
     
     return sessionId;
@@ -278,6 +332,24 @@ class SessionStorageService {
     if (message.type === 'user' && session.messages.filter(m => m.type === 'user').length === 1) {
       session.title = message.content.substring(0, 50) + (message.content.length > 50 ? '...' : '');
     }
+
+    // Persist message and updated session to IndexedDB
+    studyStorage.saveChatMessage({
+      id: message.id,
+      sessionId: session.id,
+      type: message.type,
+      content: message.content,
+      timestamp: message.timestamp,
+    }).catch(err => console.error('Failed to save message:', err));
+
+    studyStorage.saveChatSession({
+      id: session.id,
+      title: session.title,
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt,
+      documentId: session.documentId,
+      documentName: session.documentName,
+    }).catch(err => console.error('Failed to update session:', err));
   }
 
   // Get current session messages
@@ -305,6 +377,10 @@ class SessionStorageService {
       }
     }
     
+    // Delete from IndexedDB
+    studyStorage.deleteChatSession(sessionId)
+      .catch(err => console.error('Failed to delete chat session:', err));
+    
     console.log('🗑️ Chat session deleted:', sessionId);
   }
 
@@ -327,6 +403,16 @@ class SessionStorageService {
       if (documentName && session.messages.length === 0) {
         session.title = `Chat about ${documentName}`;
       }
+
+      // Persist to IndexedDB
+      studyStorage.saveChatSession({
+        id: session.id,
+        title: session.title,
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt,
+        documentId: session.documentId,
+        documentName: session.documentName,
+      }).catch(err => console.error('Failed to update session document:', err));
     }
   }
 }

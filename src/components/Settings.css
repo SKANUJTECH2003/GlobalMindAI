@@ -68,7 +68,7 @@
 }
 
 .settings-close:hover {
-  background: rgba(124, 58, 237, 0.1);
+  background: rgba(212, 175, 55, 0.1);
   color: var(--text-primary, #ffffff);
 }
 
@@ -138,13 +138,13 @@
 }
 
 .theme-btn:hover {
-  border-color: var(--purple, #7c3aed);
-  background: rgba(124, 58, 237, 0.1);
+  border-color: var(--purple, #d4af37);
+  background: rgba(212, 175, 55, 0.1);
 }
 
 .theme-btn.active {
-  background: linear-gradient(135deg, var(--purple, #7c3aed), var(--blue, #3b82f6));
-  border-color: var(--purple, #7c3aed);
+  background: linear-gradient(135deg, var(--purple, #d4af37), var(--blue, #c9a961));
+  border-color: var(--purple, #d4af37);
   color: white;
 }
 
@@ -183,13 +183,13 @@
 }
 
 .size-btn:hover {
-  border-color: var(--purple, #7c3aed);
-  background: rgba(124, 58, 237, 0.1);
+  border-color: var(--purple, #d4af37);
+  background: rgba(212, 175, 55, 0.1);
 }
 
 .size-btn.active {
-  background: linear-gradient(135deg, var(--purple, #7c3aed), var(--blue, #3b82f6));
-  border-color: var(--purple, #7c3aed);
+  background: linear-gradient(135deg, var(--purple, #d4af37), var(--blue, #c9a961));
+  border-color: var(--purple, #d4af37);
 }
 
 /* Temperature Slider */
@@ -205,8 +205,8 @@
   border-radius: 3px;
   background: linear-gradient(
     to right,
-    var(--purple, #7c3aed),
-    var(--blue, #3b82f6)
+    var(--purple, #d4af37),
+    var(--blue, #c9a961)
   );
   outline: none;
   -webkit-appearance: none;
@@ -219,37 +219,37 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--purple, #7c3aed);
+  background: var(--purple, #d4af37);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
   transition: all 0.2s ease;
 }
 
 .temperature-slider::-webkit-slider-thumb:hover {
   transform: scale(1.2);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.6);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.6);
 }
 
 .temperature-slider::-moz-range-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--purple, #7c3aed);
+  background: var(--purple, #d4af37);
   cursor: pointer;
   border: none;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
   transition: all 0.2s ease;
 }
 
 .temperature-slider::-moz-range-thumb:hover {
   transform: scale(1.2);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.6);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.6);
 }
 
 .slider-value {
   min-width: 40px;
   text-align: right;
-  color: var(--purple, #7c3aed);
+  color: var(--purple, #d4af37);
   font-weight: 600;
   font-size: 1.1rem;
 }
@@ -261,7 +261,7 @@
   gap: 12px;
   padding: 12px;
   margin-bottom: 12px;
-  background: rgba(124, 58, 237, 0.05);
+  background: rgba(212, 175, 55, 0.05);
   border-radius: 8px;
   border: 1px solid var(--border, rgba(139, 92, 246, 0.2));
   transition: all 0.2s ease;
@@ -269,7 +269,7 @@
 
 .settings-checkbox:hover {
   border-color: var(--border, rgba(139, 92, 246, 0.4));
-  background: rgba(124, 58, 237, 0.1);
+  background: rgba(212, 175, 55, 0.1);
 }
 
 .settings-checkbox input[type="checkbox"] {
@@ -277,7 +277,7 @@
   height: 20px;
   margin-top: 2px;
   cursor: pointer;
-  accent-color: var(--purple, #7c3aed);
+  accent-color: var(--purple, #d4af37);
 }
 
 .settings-checkbox label {
@@ -301,7 +301,7 @@
 }
 
 .about-text a {
-  color: var(--purple, #7c3aed);
+  color: var(--purple, #d4af37);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
@@ -336,13 +336,13 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--purple, #7c3aed), var(--blue, #3b82f6));
+  background: linear-gradient(135deg, var(--purple, #d4af37), var(--blue, #c9a961));
   color: white;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 8px 16px rgba(212, 175, 55, 0.4);
 }
 
 .btn-primary:active {
@@ -356,8 +356,8 @@
 }
 
 .btn-secondary:hover {
-  border-color: var(--purple, #7c3aed);
-  background: rgba(124, 58, 237, 0.1);
+  border-color: var(--purple, #d4af37);
+  background: rgba(212, 175, 55, 0.1);
 }
 
 /* Scrollbar Styling */
@@ -370,7 +370,7 @@
 }
 
 .settings-content::-webkit-scrollbar-thumb {
-  background: var(--purple, #7c3aed);
+  background: var(--purple, #d4af37);
   border-radius: 3px;
 }
 
@@ -385,7 +385,7 @@ body.theme-light {
   --bg-light: #ececf1;
   --text-primary: #1a1a1a;
   --text-secondary: #666666;
-  --border: rgba(124, 58, 237, 0.15);
+  --border: rgba(212, 175, 55, 0.15);
 }
 
 /* Responsive */

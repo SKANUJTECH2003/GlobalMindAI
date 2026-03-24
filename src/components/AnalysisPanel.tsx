@@ -12,10 +12,30 @@ export function AnalysisPanel() {
   const [result, setResult] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState('');
+  const [hoveredDocId, setHoveredDocId] = useState<string | null>(null);
 
   const loadDocuments = async () => {
     const docs = await studyStorage.getAllDocuments();
     setDocuments(docs);
+  };
+
+  const handleDeleteDocument = async (docId: string, docName: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    const confirmed = window.confirm(`Delete "${docName}"?\n\nThis cannot be undone.`);
+    if (confirmed) {
+      try {
+        await studyStorage.deleteDocument(docId);
+        if (selectedDoc?.id === docId) {
+          setSelectedDoc(null);
+          setResult(null);
+        }
+        await loadDocuments();
+      } catch (error) {
+        console.error('Failed to delete document:', error);
+        alert('Failed to delete document. Please try again.');
+      }
+    }
   };
 
   useState(() => {
@@ -211,17 +231,48 @@ export function AnalysisPanel() {
         <div className="documents-list">
           <h3>Your Documents</h3>
           {documents.map((doc) => (
-            <button
+            <div
               key={doc.id}
-              className="document-item"
-              onClick={() => setSelectedDoc(doc)}
+              className="document-item-wrapper"
+              onMouseEnter={() => setHoveredDocId(doc.id)}
+              onMouseLeave={() => setHoveredDocId(null)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                position: 'relative'
+              }}
             >
-              <span className="doc-icon">📄</span>
-              <div className="doc-details">
-                <h4>{doc.name}</h4>
-                <p>{Math.round(doc.content?.length / 1024 || 0)}KB</p>
-              </div>
-            </button>
+              <button
+                className="document-item"
+                onClick={() => setSelectedDoc(doc)}
+                style={{ flex: 1 }}
+              >
+                <span className="doc-icon">📄</span>
+                <div className="doc-details">
+                  <h4>{doc.name}</h4>
+                  <p>{Math.round(doc.content?.length / 1024 || 0)}KB</p>
+                </div>
+              </button>
+              <button
+                className="delete-doc-btn"
+                onClick={(e) => handleDeleteDocument(doc.id, doc.name, e)}
+                title="Delete document"
+                style={{
+                  opacity: hoveredDocId === doc.id ? 1 : 0,
+                  pointerEvents: hoveredDocId === doc.id ? 'auto' : 'none',
+                  transition: 'opacity 0.2s ease',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#ef4444',
+                  cursor: 'pointer',
+                  padding: '0.4rem 0.6rem',
+                  fontSize: '1.1rem',
+                }}
+              >
+                🗑️
+              </button>
+            </div>
           ))}
         </div>
       )}

@@ -4,7 +4,47 @@ All notable changes to GlobalMindAI are documented here.
 
 ---
 
-## [Latest] - 2026-03-21
+## [Latest] - 2026-03-24
+
+### ✨ New Features: Response Feedback System
+
+#### **User Feedback on AI Responses**
+- **Copy Response** - Users can copy entire AI responses to clipboard with one click
+- **Like/Dislike Rating** - Rate responses as helpful or unhelpful
+- **Flag Responses** - Flag inappropriate or problematic responses for review
+- **Regenerate Option** - Already existed; now enhanced with feedback context
+
+**Implementation Details:**
+- Extended `ChatMessage` interface with feedback object
+  - `feedback.rating`: Tracks 'like', 'dislike', or null
+  - `feedback.flagged`: Boolean flag status
+  - `feedback.regeneratedFrom`: References for regenerated responses
+
+- **UI Enhancements:**
+  - Action buttons below each AI response: Copy | 👍 | 👎 | ⋮ (More)
+  - Color-coded feedback states (green for likes, red for dislikes, amber for flags)
+  - Dropdown menu for flagging options
+  - Copy confirmation with "✅ Copied!" feedback
+
+- **Persistence:**
+  - Feedback stored in session storage
+  - Feedback survives across chat sessions
+  - Feedback can be exported with chat history
+
+**Files Modified:**
+- ✅ `src/services/sessionStorage.ts` - Extended ChatMessage interface
+- ✅ `src/components/MessageFormatter.tsx` - Added feedback UI and handlers
+- ✅ `src/components/MessageFormatter.css` - Styled action buttons
+- ✅ `src/components/ChatInterface.tsx` - Integrated feedback callbacks
+
+**Technical Stack:**
+- React hooks for feedback state management
+- CSS transitions and active states
+- Tooltip support for all buttons
+
+---
+
+## [Previous] - 2026-03-21
 
 ### 🚀 Major Updates
 

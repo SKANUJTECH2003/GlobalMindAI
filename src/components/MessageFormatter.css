@@ -1,0 +1,271 @@
+/* Message Formatter Styles */
+
+.formatted-list {
+  list-style-type: decimal;
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  line-height: 1.6;
+}
+
+.formatted-list li {
+  margin-bottom: 0.25rem;
+  color: inherit;
+}
+
+.code-block-container {
+  margin: 0.75rem 0;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-language {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+}
+
+.copy-code-btn {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 4px;
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-code-btn:hover {
+  background: rgba(212, 175, 55, 0.3);
+  border-color: rgba(212, 175, 55, 0.6);
+}
+
+.code-block {
+  padding: 0.75rem;
+  margin: 0;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.code-block code {
+  color: inherit;
+}
+
+.formatted-h4 {
+  margin: 0.75rem 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: inherit;
+  line-height: 1.4;
+}
+
+.formatted-inline-bold {
+  font-weight: 600;
+  color: inherit;
+}
+
+.formatted-inline-italic {
+  font-style: italic;
+  color: inherit;
+}
+
+.formatted-paragraph {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+/* Message Actions */
+.message-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.1);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Action Buttons Base Style */
+.action-btn {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 5px;
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.action-btn:hover {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.4);
+  transform: translateY(-1px);
+}
+
+.action-btn.active {
+  background: rgba(212, 175, 55, 0.25);
+  border-color: rgba(212, 175, 55, 0.6);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+}
+
+/* Copy Button */
+.copy-btn {
+  min-width: 80px;
+}
+
+.copy-btn:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+/* Like/Dislike Buttons */
+.like-btn,
+.dislike-btn {
+  font-size: 1rem;
+  padding: 0.3rem 0.5rem;
+  min-width: auto;
+}
+
+.like-btn:hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.like-btn.active {
+  background: rgba(34, 197, 94, 0.25);
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+}
+
+.dislike-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.dislike-btn.active {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+}
+
+/* Flag Button & Menu */
+.flag-menu-container {
+  position: relative;
+}
+
+.flag-btn {
+  font-size: 1rem;
+  padding: 0.3rem 0.5rem;
+  min-width: auto;
+}
+
+.flag-btn:hover {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.flag-btn.active {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
+}
+
+.flag-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(20, 20, 30, 0.95);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  min-width: 150px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.flag-option {
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.flag-option:hover {
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.flag-option.active {
+  background: rgba(212, 175, 55, 0.25);
+  color: #d4af37;
+}
+
+.flag-icon {
+  font-size: 1rem;
+}
+
+/* Speak Button */
+.speak-btn,
+.regenerate-btn {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 6px;
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.speak-btn:hover,
+.regenerate-btn:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.5);
+  transform: translateY(-2px);
+}
+
+.speak-btn.playing {
+  background: rgba(201, 169, 97, 0.2);
+  border-color: rgba(201, 169, 97, 0.5);
+  animation: pulse-blue 1.5s infinite;
+}
+
+@keyframes pulse-blue {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}

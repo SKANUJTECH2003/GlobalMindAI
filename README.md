@@ -135,6 +135,9 @@ GlobalMindAI/
 - Context-aware discussions
 - Model switching capability
 - Responsive during all operations
+- **Response Feedback System** - Like/dislike, copy, and flag responses
+- Response regeneration for alternative answers
+- Text-to-speech for responses
 
 ### 4. **Vision & Image Processing**
 - OCR (Optical Character Recognition)
@@ -263,6 +266,11 @@ View deployment guide: [DEPLOYMENT.md](DEPLOYMENT.md)
 ## 🏆 What's New
 
 ### Latest Updates
+- ✅ **Response Feedback System** - Users can like, dislike, copy, and flag AI responses
+- ✅ Copy entire responses to clipboard with one click
+- ✅ Rate responses with like/dislike for quality feedback
+- ✅ Flag responses for moderation with dropdown menu
+- ✅ Feedback metadata stored with chat history
 - ✅ Fixed page unresponsiveness during AI operations
 - ✅ Implemented browser-yield streaming for all text generation
 - ✅ Added progress callbacks for long operations
@@ -273,11 +281,13 @@ View deployment guide: [DEPLOYMENT.md](DEPLOYMENT.md)
 - ✅ Added comprehensive error boundaries
 
 ### Recent Improvements
+- Response interaction buttons with visual feedback (green for likes, red for dislikes, amber for flags)
 - Streaming utilities prevent UI freezing
 - Timeout protection against hung streams
 - Debounced state updates reduce re-renders
 - Comprehensive error logging
 - TypeScript strict mode compliance
+- Persistent feedback across chat sessions
 
 ---
 

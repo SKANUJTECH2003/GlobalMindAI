@@ -89,7 +89,22 @@ When you first open the app, it will:
 4. Try **Doubt Destroyer** - get explanations
 5. Generate **Mind Maps** - visualize concepts
 
-#### 4️⃣ Voice Interaction (Optional)
+#### 4️⃣ Use Response Feedback System ✨ NEW
+When the AI responds to your questions:
+- **📋 Copy** - Click to copy response to clipboard
+- **👍 Like** - Rate helpful responses (goes green)
+- **👎 Dislike** - Rate unhelpful responses (goes red)
+- **⋮ More Options** - Flag inappropriate content (goes amber)
+- **🔉 Listen** - Hear the response read aloud
+- **🔄 Regenerate** - Get a different response
+
+**Try it:**
+1. Ask a question in Chat
+2. Get a response
+3. Try clicking the feedback buttons below it
+4. Your feedback helps improve responses!
+
+#### 5️⃣ Voice Interaction (Optional)
 - Click microphone icon
 - Speak your question
 - Get audio response

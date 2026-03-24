@@ -82,7 +82,7 @@ export function App() {
                   onClick={() => setShowAnalysis(false)}
                   title="Chat with AI"
                 >
-                  💬 Chat
+                  🎙️ Chat
                 </button>
                 <button 
                   className={`mode-toggle ${showAnalysis ? 'active' : ''}`}

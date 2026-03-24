@@ -8,6 +8,7 @@ import { createEnhancedPrompt, formatResponse } from '../utils/responseFormatter
 import { Tooltip } from './Tooltip';
 import { PerformanceMetrics, trackResponseTime } from './PerformanceMetrics';
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp';
+import { MessageFormatter } from './MessageFormatter';
 import './ChatInterface.css';
 
 export function ChatInterface() {
@@ -21,17 +22,89 @@ export function ChatInterface() {
   const [modelStatus, setModelStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
   const [showMetrics, setShowMetrics] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const recognitionRef = useRef<any>(null);
+
+  // Helper function to deduplicate messages by ID
+  const deduplicateMessages = (msgs: ChatMessage[]): ChatMessage[] => {
+    const seen = new Set<string>();
+    return msgs.filter(msg => {
+      if (seen.has(msg.id)) return false;
+      seen.add(msg.id);
+      return true;
+    });
+  };
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = false;
+        recognitionRef.current.lang = 'en-US';
+
+        recognitionRef.current.onstart = () => setIsListening(true);
+        recognitionRef.current.onend = () => setIsListening(false);
+
+        recognitionRef.current.onresult = (event: any) => {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+          if (transcript) {
+            setInput(prev => prev + (prev ? ' ' : '') + transcript);
+          }
+        };
+
+        recognitionRef.current.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
+        };
+      }
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, []);
+
+  // Toggle microphone listening
+  const toggleMicrophone = () => {
+    if (!recognitionRef.current) {
+      logger.error('Speech recognition not available');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      try {
+        setInput(''); // Clear for fresh input
+        recognitionRef.current.start();
+      } catch (error) {
+        logger.error('Failed to start speech recognition:', error);
+      }
+    }
+  };
 
   // Load chat history on mount
   useEffect(() => {
     loadChatHistory();
   }, []);
 
-  // Load chat history from session storage
-  const loadChatHistory = useCallback(() => {
+  // Load chat history from session storage (with persistence)
+  const loadChatHistory = useCallback(async () => {
+    // Initialize persistent storage on first load
+    await sessionStorage.initialize();
+    
     const sessions = sessionStorage.getAllChatSessions();
     setChatSessions(sessions);
     
@@ -49,9 +122,9 @@ export function ChatInterface() {
       setCurrentSessionId(sessionId);
       setChatSessions([sessionStorage.getCurrentSession()]);
     } else {
-      // Load most recent session
+      // Load most recent session with deduplication
       const currentSession = sessionStorage.getCurrentSession();
-      setMessages(currentSession.messages);
+      setMessages(deduplicateMessages(currentSession.messages));
       setCurrentSessionId(currentSession.id);
       
       // Restore uploaded document if exists
@@ -61,13 +134,13 @@ export function ChatInterface() {
         });
       }
     }
-  }, []);
+  }, [deduplicateMessages]);
 
   // Switch to different chat session
   const switchSession = useCallback((sessionId: string) => {
     sessionStorage.setCurrentSession(sessionId);
     const session = sessionStorage.getCurrentSession();
-    setMessages(session.messages);
+    setMessages(deduplicateMessages(session.messages));
     setCurrentSessionId(sessionId);
     
     // Restore document context
@@ -78,7 +151,7 @@ export function ChatInterface() {
     } else {
       setUploadedDoc(null);
     }
-  }, []);
+  }, [deduplicateMessages]);
 
   // Create new chat session
   const createNewSession = useCallback(() => {
@@ -101,10 +174,10 @@ export function ChatInterface() {
       
       // Load current session after deletion
       const currentSession = sessionStorage.getCurrentSession();
-      setMessages(currentSession.messages);
+      setMessages(deduplicateMessages(currentSession.messages));
       setCurrentSessionId(currentSession.id);
     }
-  }, [chatSessions, loadChatHistory]);
+  }, [chatSessions, loadChatHistory, deduplicateMessages]);
 
   // Clear current chat
   const clearCurrentChat = useCallback(() => {
@@ -182,7 +255,7 @@ export function ChatInterface() {
         timestamp: Date.now(),
       };
       sessionStorage.addMessage(cancelMsg);
-      setMessages(prev => [...prev, cancelMsg]);
+      setMessages(prev => deduplicateMessages([...prev, cancelMsg]));
     }
   };
 
@@ -219,7 +292,7 @@ export function ChatInterface() {
         timestamp: Date.now(),
       };
       sessionStorage.addMessage(loadingMsg);
-      setMessages(prev => [...prev, loadingMsg]);
+      setMessages(prev => deduplicateMessages([...prev, loadingMsg]));
 
       try {
         await ModelManager.ensureModelLoaded();
@@ -231,7 +304,7 @@ export function ChatInterface() {
           timestamp: Date.now(),
         };
         sessionStorage.addMessage(readyMsg);
-        setMessages(prev => [...prev, readyMsg]);
+        setMessages(prev => deduplicateMessages([...prev, readyMsg]));
         setModelStatus('ready');
         loadChatHistory(); // Refresh to get updated messages
       } catch (error) {
@@ -242,7 +315,7 @@ export function ChatInterface() {
           timestamp: Date.now(),
         };
         sessionStorage.addMessage(errorMsg);
-        setMessages(prev => [...prev, errorMsg]);
+        setMessages(prev => deduplicateMessages([...prev, errorMsg]));
         setModelStatus('error');
       }
     };
@@ -269,7 +342,7 @@ export function ChatInterface() {
 
     // Add to session storage
     sessionStorage.addMessage(userMessage);
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prev => deduplicateMessages([...prev, userMessage]));
     setChatSessions(sessionStorage.getAllChatSessions());
     
     const userQuestion = input;
@@ -285,7 +358,7 @@ export function ChatInterface() {
       timestamp: Date.now(),
     };
     
-    setMessages(prev => [...prev, aiMessagePlaceholder]);
+    setMessages(prev => deduplicateMessages([...prev, aiMessagePlaceholder]));
 
     try {
       let fullResponse = '';
@@ -318,21 +391,29 @@ export function ChatInterface() {
         // General chat with STREAMING
         logger.debug('General chat mode with streaming');
         
-        const basePrompt = `You are EduFlow AI, a helpful educational assistant. Answer the following question clearly, with good formatting, emojis, and visual structure:\n\nQuestion: ${userQuestion}\n\nProvide a well-formatted, engaging response with emojis and clear structure.`;
+        const basePrompt = `You are EduFlow AI. Answer clearly with structure:\n\nQuestion: ${userQuestion}`;
         const generalPrompt = createEnhancedPrompt(basePrompt);
         
         const { TextGeneration } = await import('@runanywhere/web-llamacpp');
         const { stream } = await TextGeneration.generateStream(generalPrompt, {
-          maxTokens: 500,
+          maxTokens: 300, // Reduced from 500 for faster responses
           temperature: 0.7,
         });
 
-        // STREAMING: Update UI as tokens arrive with proper browser yields
+        // STREAMING: Update UI FREQUENTLY with proper browser yields + TIMEOUT
         let tokenCount = 0;
         let lastUIUpdate = Date.now();
-        const UI_UPDATE_INTERVAL = 100; // Update UI every 100ms max
+        const UI_UPDATE_INTERVAL = 50; // More frequent updates (50ms instead of 100ms)
+        const STREAM_TIMEOUT = 30000; // 30 second timeout to prevent infinite hangs
+        const streamStartTime = Date.now();
         
         for await (const token of stream) {
+          // Safety: Check timeout
+          if (Date.now() - streamStartTime > STREAM_TIMEOUT) {
+            logger.warn('Stream timeout - stopping generation');
+            throw new Error('Response generation timed out. Please try again.');
+          }
+          
           // Check if cancelled
           if (abortControllerRef.current?.signal.aborted) {
             throw new Error('Cancelled');
@@ -341,9 +422,10 @@ export function ChatInterface() {
           fullResponse += token;
           tokenCount++;
           
-          // Update UI at reasonable intervals to prevent blocking
+          // Update UI more frequently - every 3 tokens OR every 50ms
+          // This keeps the UI responsive while not causing excessive re-renders
           const now = Date.now();
-          if (now - lastUIUpdate >= UI_UPDATE_INTERVAL || tokenCount % 10 === 0) {
+          if (now - lastUIUpdate >= UI_UPDATE_INTERVAL || tokenCount % 3 === 0) {
             setMessages(prev => 
               prev.map(msg => 
                 msg.id === aiMessageId 
@@ -353,9 +435,9 @@ export function ChatInterface() {
             );
             lastUIUpdate = now;
             
-            // CRITICAL: Yield to browser to prevent UI freeze
-            // This allows React to process renders and the browser to handle events
-            await new Promise(resolve => setTimeout(resolve, 1));
+            // CRITICAL: MORE AGGRESSIVE browser yield to prevent UI freeze
+            // 10ms yield allows browser to process events and React renders
+            await new Promise(resolve => setTimeout(resolve, 10));
           }
         }
         
@@ -398,12 +480,31 @@ export function ChatInterface() {
           timestamp: Date.now(),
         };
         sessionStorage.addMessage(errorMessage);
-        setMessages(prev => [...prev, errorMessage]);
+        setMessages(prev => deduplicateMessages([...prev, errorMessage]));
       }
     } finally {
       setIsTyping(false);
       cleanupAbortController();
     }
+  };
+
+  // Handle user feedback on AI responses
+  const handleFeedback = (messageId: string, feedback: any) => {
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, feedback }
+          : msg
+      )
+    );
+
+    // Defer storage to not block UI
+    setTimeout(() => {
+      const updatedMessage = messages.find(m => m.id === messageId);
+      if (updatedMessage) {
+        sessionStorage.addMessage({ ...updatedMessage, feedback });
+      }
+    }, 0);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -421,7 +522,7 @@ export function ChatInterface() {
         content: `❌ Unsupported File Type: ${file.name}\n\n🚫 Chat only supports .txt files!\n\nWhy?\n• Chat uses text-only LLM model\n• Images/PDFs need Vision Language Model (VLM)\n\n✅ Solutions:\n• For images → Use "Doubt Destroyer" tab\n• For PDFs → Convert to .txt file first\n• Upload plain text (.txt) files only`,
         timestamp: Date.now(),
       };
-      setMessages(prev => [...prev, errorMsg]);
+      setMessages(prev => deduplicateMessages([...prev, errorMsg]));
       
       // Clear file input
       if (e.target) e.target.value = '';
@@ -437,7 +538,7 @@ export function ChatInterface() {
         content: '⚠️ File too large! Please upload files smaller than 10MB.',
         timestamp: Date.now(),
       };
-      setMessages(prev => [...prev, errorMsg]);
+      setMessages(prev => deduplicateMessages([...prev, errorMsg]));
       if (e.target) e.target.value = '';
       return;
     }
@@ -455,7 +556,7 @@ export function ChatInterface() {
           content: '⚠️ File appears to be empty or too small. Please upload a file with actual text content (minimum 10 characters).',
           timestamp: Date.now(),
         };
-        setMessages(prev => [...prev, errorMsg]);
+        setMessages(prev => deduplicateMessages([...prev, errorMsg]));
         return;
       }
 
@@ -476,7 +577,7 @@ export function ChatInterface() {
         content: `✅ Document Loaded: ${file.name} (${Math.round(content.length / 1024)}KB)\n\n💬 Now I can answer questions about this document!\n💡 Or continue asking general questions.`,
         timestamp: Date.now(),
       };
-      setMessages(prev => [...prev, uploadMsg]);
+      setMessages(prev => deduplicateMessages([...prev, uploadMsg]));
     };
     
     reader.onerror = () => {
@@ -486,7 +587,7 @@ export function ChatInterface() {
         content: '❌ Failed to read file. Please try again.',
         timestamp: Date.now(),
       };
-      setMessages(prev => [...prev, errorMsg]);
+      setMessages(prev => deduplicateMessages([...prev, errorMsg]));
     };
     
     reader.readAsText(file);
@@ -607,7 +708,17 @@ export function ChatInterface() {
                 {msg.type === 'user' ? '👤' : msg.type === 'ai' ? '🤖' : 'ℹ️'}
               </div>
               <div className="message-content">
-                <p>{msg.content}</p>
+                {msg.type === 'ai' ? (
+                  <MessageFormatter 
+                    content={msg.content} 
+                    messageId={msg.id} 
+                    isAI={true}
+                    onFeedback={(feedback) => handleFeedback(msg.id, feedback)}
+                    initialFeedback={msg.feedback}
+                  />
+                ) : (
+                  <p>{msg.content}</p>
+                )}
                 <span className="message-time">
                   {new Date(msg.timestamp).toLocaleTimeString()}
                 </span>
@@ -655,7 +766,7 @@ export function ChatInterface() {
           <div ref={messagesEndRef} />
         </div>
 
-        {messages.length <= 3 && modelStatus === 'ready' && (
+        {messages.length <= 3 && modelStatus === 'ready' && !input.trim() && (
           <div className="quick-actions">
             <h3>{uploadedDoc ? '📄 Document Actions' : '💬 Quick Start'}</h3>
             <div className="actions-grid">
@@ -743,6 +854,20 @@ export function ChatInterface() {
               position="top"
             >
               📁
+            </Tooltip>
+          </button>
+
+          <button
+            className={`voice-input-btn ${isListening ? 'listening' : ''}`}
+            onClick={toggleMicrophone}
+            title={isListening ? "Listening... (Click to stop)" : "Speak to input text"}
+            disabled={modelStatus !== 'ready'}
+          >
+            <Tooltip
+              content={isListening ? "🎤 Listening..." : "Speak (🎤)"}
+              position="top"
+            >
+              {isListening ? '🎤' : '🎙️'}
             </Tooltip>
           </button>
 

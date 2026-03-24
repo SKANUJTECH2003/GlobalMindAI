@@ -315,12 +315,60 @@ Real-time AI conversation with streaming responses.
 - Problem solving
 - Brainstorming
 
+### Response Interaction Features ✨
+
+Every AI response includes interactive buttons for feedback and actions:
+
+#### 📋 **Copy Response**
+- Copy entire response to clipboard with one click
+- Plain text format (markdown stripped)
+- Confirmation feedback: "✅ Copied!"
+- Useful for: Study notes, documentation, sharing
+
+#### 👍 **Like Response**
+- Mark helpful, accurate, or well-explained responses
+- Active state highlighted in green
+- Toggleable - like again to remove
+- Helps improve model over time
+
+#### 👎 **Dislike Response**
+- Flag unhelpful or inaccurate responses
+- Active state highlighted in red
+- Toggleable - dislike again to remove
+- Provides feedback for model improvement
+
+#### 🚩 **Flag Response**
+- Access via three-dot menu (⋮)
+- Flag inappropriate or problematic content
+- Dropdown menu for additional options
+- Active state highlighted in amber
+- Enables moderation workflow
+
+#### 🔄 **Regenerate Response**
+- Get a different response to the same question
+- Useful when first response wasn't helpful
+- Maintains chat history
+- No token limit (uses streaming)
+
+#### 🔉 **Listen (Text-to-Speech)**
+- Audio playback of response
+- Helpful for: Multitasking, accessibility, auditory learning
+- Adjustable playback speed
+- Stop button for pause control
+
+**Best Practices for Feedback:**
+- Like accurate, helpful responses to improve model quality
+- Dislike responses that are vague, inaccurate, or unhelpful
+- Flag responses that contain harmful or inappropriate content
+- Use regenerate when first response wasn't satisfactory
+
 ### Advanced Features
 
 #### 📌 **Conversation History**
 - Automatically saved in session
+- Feedback preserved with responses
 - Search within conversation
-- Export chat as PDF
+- Export chat with feedback metadata
 - Clear history when done
 - Persistent across tabs
 
@@ -337,7 +385,7 @@ Real-time feedback during generation:
 - Token count
 - Response progress
 - Estimated time remaining
-- Cancel button (coming soon)
+- Cancel button for stopping generation
 
 ### Best Practices
 
@@ -347,12 +395,15 @@ Real-time feedback during generation:
 - Use follow-up questions
 - Ask for examples
 - Ask for multiple perspectives
+- Use feedback buttons to help improve responses
+- Regenerate if first response wasn't satisfactory
 
 ❌ **DON'T:**
 - Too vague questions
 - Mixed topics in one message
 - Expect instant responses
 - Ask for code-only without context
+- Ignore feedback options (they help everyone!)
 
 ---
 
