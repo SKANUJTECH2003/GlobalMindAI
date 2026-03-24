@@ -462,3 +462,59 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Light Theme Overrides */
+body.theme-light .analysis-panel {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+body.theme-light .analysis-type-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .analysis-type-card:hover {
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.1);
+}
+
+body.theme-light .analysis-type-card.active {
+  background: rgba(124, 58, 237, 0.08);
+  border-color: var(--purple);
+}
+
+body.theme-light .result-card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .topic-card {
+  background: #ffffff;
+  border-left-color: var(--purple);
+}
+
+body.theme-light .topic-card:hover {
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.1);
+}
+
+body.theme-light .flashcard {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .flashcard:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+
+body.theme-light .topic-card h4 {
+  color: #0d0d0d !important;
+}
+
+body.theme-light .quiz-question h3 {
+  color: #0d0d0d !important;
+}
+
+body.theme-light .result-card h3 {
+  color: #0d0d0d !important;
+}

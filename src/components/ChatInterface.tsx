@@ -1,8 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { documentAnalysis } from '../services/documentAnalysis';
 import { sessionStorage, type ChatMessage, type ChatSession } from '../services/sessionStorage';
 import { ModelManager } from '../services/modelManager';
 import { logger } from '../services/logger';
+import { exportChat } from '../utils/export';
+import { createEnhancedPrompt, formatResponse } from '../utils/responseFormatter';
+import { Tooltip } from './Tooltip';
+import { PerformanceMetrics, trackResponseTime } from './PerformanceMetrics';
+import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp';
 import './ChatInterface.css';
 
 export function ChatInterface() {
@@ -14,6 +19,8 @@ export function ChatInterface() {
   const [isTyping, setIsTyping] = useState(false);
   const [uploadedDoc, setUploadedDoc] = useState<any>(null);
   const [modelStatus, setModelStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
+  const [showMetrics, setShowMetrics] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -24,7 +31,7 @@ export function ChatInterface() {
   }, []);
 
   // Load chat history from session storage
-  const loadChatHistory = () => {
+  const loadChatHistory = useCallback(() => {
     const sessions = sessionStorage.getAllChatSessions();
     setChatSessions(sessions);
     
@@ -54,10 +61,10 @@ export function ChatInterface() {
         });
       }
     }
-  };
+  }, []);
 
   // Switch to different chat session
-  const switchSession = (sessionId: string) => {
+  const switchSession = useCallback((sessionId: string) => {
     sessionStorage.setCurrentSession(sessionId);
     const session = sessionStorage.getCurrentSession();
     setMessages(session.messages);
@@ -71,17 +78,17 @@ export function ChatInterface() {
     } else {
       setUploadedDoc(null);
     }
-  };
+  }, []);
 
   // Create new chat session
-  const createNewSession = () => {
+  const createNewSession = useCallback(() => {
     const sessionId = sessionStorage.createChatSession(uploadedDoc?.id, uploadedDoc?.name);
     loadChatHistory();
     switchSession(sessionId);
-  };
+  }, [uploadedDoc, loadChatHistory, switchSession]);
 
   // Delete chat session
-  const deleteSession = (sessionId: string, event: React.MouseEvent) => {
+  const deleteSession = useCallback((sessionId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     
     const session = chatSessions.find(s => s.id === sessionId);
@@ -97,17 +104,69 @@ export function ChatInterface() {
       setMessages(currentSession.messages);
       setCurrentSessionId(currentSession.id);
     }
-  };
+  }, [chatSessions, loadChatHistory]);
 
   // Clear current chat
-  const clearCurrentChat = () => {
+  const clearCurrentChat = useCallback(() => {
     const confirmed = window.confirm('Clear current chat history?\n\nThis will remove all messages from this conversation.');
     if (confirmed) {
       sessionStorage.clearCurrentChat();
       loadChatHistory();
       setMessages([]);
     }
-  };
+  }, [loadChatHistory]);
+
+  // Set up keyboard shortcuts (after functions are defined)
+  useEffect(() => {
+    // This effect runs after all functions are defined, no need to use the hook wrapper
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'INPUT' && event.key !== 'Enter') return;
+
+      if (event.ctrlKey || event.metaKey) {
+        switch (event.key.toLowerCase()) {
+          case 'enter':
+            event.preventDefault();
+            if (input.trim() && modelStatus === 'ready') {
+              const button = document.querySelector('[data-send-button]') as HTMLButtonElement;
+              button?.click();
+            }
+            break;
+          case 'l':
+            event.preventDefault();
+            clearCurrentChat();
+            break;
+          case '/':
+            event.preventDefault();
+            setShowShortcutsHelp(true);
+            break;
+          case 'n':
+            event.preventDefault();
+            createNewSession();
+            break;
+          case 's':
+            event.preventDefault();
+            const currentSession = sessionStorage.getCurrentSession();
+            exportChat(currentSession.messages, 'json', `EduFlow-${Date.now()}`);
+            break;
+          case 't':
+            event.preventDefault();
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            break;
+          case 'b':
+            event.preventDefault();
+            setShowSidebar(!showSidebar);
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [input, modelStatus, showSidebar, clearCurrentChat, createNewSession]);
 
   // Cancel ongoing generation
   const cancelGeneration = () => {
@@ -259,7 +318,8 @@ export function ChatInterface() {
         // General chat with STREAMING
         logger.debug('General chat mode with streaming');
         
-        const generalPrompt = `You are EduFlow AI, a helpful educational assistant. Answer the following question clearly and concisely:\n\nQuestion: ${userQuestion}\n\nAnswer:`;
+        const basePrompt = `You are EduFlow AI, a helpful educational assistant. Answer the following question clearly, with good formatting, emojis, and visual structure:\n\nQuestion: ${userQuestion}\n\nProvide a well-formatted, engaging response with emojis and clear structure.`;
+        const generalPrompt = createEnhancedPrompt(basePrompt);
         
         const { TextGeneration } = await import('@runanywhere/web-llamacpp');
         const { stream } = await TextGeneration.generateStream(generalPrompt, {
@@ -300,10 +360,11 @@ export function ChatInterface() {
         }
         
         // Final update with complete response
+        const formattedResponse = formatResponse(fullResponse);
         setMessages(prev => 
           prev.map(msg => 
             msg.id === aiMessageId 
-              ? { ...msg, content: fullResponse.trim() }
+              ? { ...msg, content: formattedResponse.trim() }
               : msg
           )
         );
@@ -311,10 +372,11 @@ export function ChatInterface() {
       
       // Defer storage write to not block UI
       setTimeout(() => {
+        const formattedResponse = formatResponse(fullResponse);
         const finalMessage: ChatMessage = {
           id: aiMessageId,
           type: 'ai',
-          content: fullResponse.trim(),
+          content: formattedResponse.trim(),
           timestamp: Date.now(),
         };
         sessionStorage.addMessage(finalMessage);
@@ -676,7 +738,12 @@ export function ChatInterface() {
             title={uploadedDoc ? "Replace document" : "Upload document (optional)"}
             disabled={modelStatus === 'loading'}
           >
-            📁
+            <Tooltip 
+              content={uploadedDoc ? "Replace document (Ctrl+U)" : "Upload .txt document (Ctrl+U)"}
+              position="top"
+            >
+              📁
+            </Tooltip>
           </button>
 
           <input
@@ -699,9 +766,30 @@ export function ChatInterface() {
             className="send-btn"
             onClick={handleSend}
             disabled={!canSend}
+            data-send-button
           >
-            ✈️
+            <Tooltip 
+              content="Send message (Ctrl+Enter)"
+              position="top"
+            >
+              ✈️
+            </Tooltip>
           </button>
+
+          {messages.length > 1 && (
+            <button 
+              className="export-btn"
+              onClick={() => exportChat(messages, 'json', 'EduFlow-Chat')}
+              title="Export chat history as JSON"
+            >
+              <Tooltip 
+                content="Export chat (Ctrl+S)"
+                position="top"
+              >
+                💾
+              </Tooltip>
+            </button>
+          )}
         </div>
 
         {uploadedDoc && (
@@ -711,6 +799,39 @@ export function ChatInterface() {
           </div>
         )}
       </div>
+
+      {/* Keyboard Shortcuts Help */}
+      <KeyboardShortcutsHelp isOpen={showShortcutsHelp} onClose={() => setShowShortcutsHelp(false)} />
+
+      {/* Keyboard Shortcuts Toggle Button */}
+      <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000, display: 'flex', gap: '12px' }}>
+        <Tooltip content="Keyboard shortcuts (Ctrl+/)" position="left">
+          <button
+            onClick={() => setShowShortcutsHelp(!showShortcutsHelp)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              fontSize: '18px',
+              cursor: 'pointer',
+              padding: '8px',
+              borderRadius: '6px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.background = 'rgba(124, 58, 237, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.background = 'transparent';
+            }}
+          >
+            ⌨️
+          </button>
+        </Tooltip>
+      </div>
+
+      {/* Performance Metrics */}
+      {showMetrics && <PerformanceMetrics isOpen={showMetrics} />}
     </div>
   );
 }
+

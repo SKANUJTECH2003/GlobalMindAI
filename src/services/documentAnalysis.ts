@@ -7,6 +7,7 @@ import { ModelManager } from '@runanywhere/web';
 import { logger } from './logger';
 import { MODEL_CONFIG } from '../constants/config';
 import { consumeStreamWithYields, withTimeout } from '../utils/streaming';
+import { createEnhancedPrompt, formatResponse } from '../utils/responseFormatter';
 import type { Quiz, QuizQuestion, ImportantTopic, Flashcard, MindMap, MindMapNode } from './studyStorage';
 
 // Ensure LLM model is loaded
@@ -144,7 +145,8 @@ export class DocumentAnalysisService {
     // Ensure model is loaded first
     await ensureModelLoaded();
     
-    const prompt = this.getSummaryPrompt(content, summaryType);
+    const basePrompt = this.getSummaryPrompt(content, summaryType);
+    const prompt = createEnhancedPrompt(basePrompt);
     logger.debug('Summary prompt prepared', { promptLength: prompt.length });
     
     try {
@@ -154,7 +156,7 @@ export class DocumentAnalysisService {
       });
 
       // Use streaming utility that yields to browser to prevent freezing
-      const fullResponse = await consumeStreamWithYields(stream, {
+      let fullResponse = await consumeStreamWithYields(stream, {
         timeoutMs: 120000, // 2 minute timeout
         onProgress: (progress) => {
           logger.debug('Summary generation progress', {
@@ -163,6 +165,9 @@ export class DocumentAnalysisService {
           });
         },
       });
+
+      // Post-process response to ensure proper formatting
+      fullResponse = formatResponse(fullResponse);
 
       logger.info('Summary generation completed', { responseLength: fullResponse.length });
       return fullResponse;
@@ -183,7 +188,8 @@ export class DocumentAnalysisService {
     // Ensure model is loaded first
     await ensureModelLoaded();
     
-    const prompt = this.getQuizPrompt(content, questionCount, difficulty);
+    const basePrompt = this.getQuizPrompt(content, questionCount, difficulty);
+    const prompt = createEnhancedPrompt(basePrompt);
     logger.debug('Quiz prompt prepared', { promptLength: prompt.length });
     
     try {
@@ -193,7 +199,7 @@ export class DocumentAnalysisService {
       });
 
       // Use streaming utility with browser yields
-      const fullResponse = await consumeStreamWithYields(stream, {
+      let fullResponse = await consumeStreamWithYields(stream, {
         timeoutMs: 180000, // 3 minute timeout for quiz
         onProgress: (progress) => {
           logger.debug('Quiz generation progress', {
@@ -202,6 +208,9 @@ export class DocumentAnalysisService {
           });
         },
       });
+
+      // Post-process response to ensure proper formatting
+      fullResponse = formatResponse(fullResponse);
 
       logger.info('Quiz generation completed', { responseLength: fullResponse.length });
       return this.parseQuizResponse(fullResponse);
@@ -216,12 +225,14 @@ export class DocumentAnalysisService {
     // Ensure model is loaded first
     await ensureModelLoaded();
     
-    const prompt = `Analyze the following study material and extract the most important topics and key concepts. For each topic, provide a clear explanation.
+    const basePrompt = `Analyze the following study material and extract the most important topics and key concepts. For each topic, provide a clear explanation.
 
 Study Material:
 ${content}
 
-Extract 5-10 important topics with their explanations.`;
+Extract 5-10 important topics with their explanations using clear formatting and emojis for emphasis.`;
+
+    const prompt = createEnhancedPrompt(basePrompt);
 
     try {
       const { stream } = await TextGeneration.generateStream(prompt, {
@@ -230,9 +241,12 @@ Extract 5-10 important topics with their explanations.`;
       });
 
       // Use streaming with browser yields
-      const fullResponse = await consumeStreamWithYields(stream, {
+      let fullResponse = await consumeStreamWithYields(stream, {
         timeoutMs: 120000,
       });
+
+      // Post-process response to ensure proper formatting
+      fullResponse = formatResponse(fullResponse);
 
       return this.parseTopicsFromResponse(fullResponse);
     } catch (error) {
@@ -246,7 +260,7 @@ Extract 5-10 important topics with their explanations.`;
     // Ensure model is loaded first
     await ensureModelLoaded();
     
-    const prompt = `Create ${count} flashcards from the following study material. Each flashcard should have:
+    const basePrompt = `Create ${count} flashcards from the following study material. Each flashcard should have:
 - Front: A clear question or concept prompt
 - Back: A concise, accurate answer
 - Difficulty: easy, medium, or hard
@@ -254,11 +268,13 @@ Extract 5-10 important topics with their explanations.`;
 Study Material:
 ${content}
 
-Format each flashcard as:
+Format each flashcard clearly with headers and emojis:
 FRONT: [question]
 BACK: [answer]
 DIFFICULTY: [easy/medium/hard]
 ---`;
+
+    const prompt = createEnhancedPrompt(basePrompt);
 
     try {
       const { stream } = await TextGeneration.generateStream(prompt, {
@@ -267,9 +283,12 @@ DIFFICULTY: [easy/medium/hard]
       });
 
       // Use streaming with browser yields
-      const fullResponse = await consumeStreamWithYields(stream, {
+      let fullResponse = await consumeStreamWithYields(stream, {
         timeoutMs: 180000,
       });
+
+      // Post-process response to ensure proper formatting
+      fullResponse = formatResponse(fullResponse);
 
       return this.parseFlashcardsFromResponse(fullResponse);
     } catch (error) {
@@ -283,7 +302,7 @@ DIFFICULTY: [easy/medium/hard]
     // Ensure model is loaded first
     await ensureModelLoaded();
     
-    const prompt = `Create a hierarchical mind map from the following study material. Identify:
+    const basePrompt = `Create a hierarchical mind map from the following study material. Identify:
 - Main topic (level 0)
 - Major subtopics (level 1)
 - Key concepts under each subtopic (level 2)
@@ -292,13 +311,15 @@ DIFFICULTY: [easy/medium/hard]
 Study Material:
 ${content}
 
-Format as:
+Format as clear hierarchy with emojis:
 LEVEL 0: [Main Topic]
 LEVEL 1: [Subtopic 1]
 LEVEL 2: [Concept 1.1]
 LEVEL 2: [Concept 1.2]
 LEVEL 1: [Subtopic 2]
 ...`;
+
+    const prompt = createEnhancedPrompt(basePrompt);
 
     try {
       const { stream } = await TextGeneration.generateStream(prompt, {
@@ -307,9 +328,12 @@ LEVEL 1: [Subtopic 2]
       });
 
       // Use streaming with browser yields
-      const fullResponse = await consumeStreamWithYields(stream, {
+      let fullResponse = await consumeStreamWithYields(stream, {
         timeoutMs: 120000,
       });
+
+      // Post-process response to ensure proper formatting
+      fullResponse = formatResponse(fullResponse);
 
       return this.parseMindMapFromResponse(fullResponse);
     } catch (error) {
@@ -323,21 +347,26 @@ LEVEL 1: [Subtopic 2]
     // Ensure model is loaded first
     await ensureModelLoaded();
     
-    const prompt = context
-      ? `Given the context: "${context}"\n\nExplain this concept in detail: "${conceptText}"\n\nProvide a clear, student-friendly explanation with examples.`
-      : `Explain this concept in detail: "${conceptText}"\n\nProvide a clear, student-friendly explanation with examples.`;
+    const basePrompt = context
+      ? `Given the context: "${context}"\n\nExplain this concept in detail: "${conceptText}"\n\nProvide a clear, student-friendly explanation with examples and visual structure.`
+      : `Explain this concept in detail: "${conceptText}"\n\nProvide a clear, student-friendly explanation with examples and visual structure.`;
+    
+    const enhancedPrompt = createEnhancedPrompt(basePrompt);
 
     try {
-      const { stream } = await TextGeneration.generateStream(prompt, {
+      const { stream } = await TextGeneration.generateStream(enhancedPrompt, {
         maxTokens: 500,
         temperature: 0.4,
       });
 
       // Use streaming with browser yields
-      const fullResponse = await consumeStreamWithYields(stream, {
+      let fullResponse = await consumeStreamWithYields(stream, {
         timeoutMs: 90000,
       });
 
+      // Post-process response to ensure proper formatting
+      fullResponse = formatResponse(fullResponse);
+      
       return fullResponse;
     } catch (error) {
       logger.error('Concept explanation failed', error);

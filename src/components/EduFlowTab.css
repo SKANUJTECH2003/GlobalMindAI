@@ -213,3 +213,73 @@
   justify-content: center;
   color: var(--text-secondary, #aaa);
 }
+
+/* Light Theme Overrides */
+body.theme-light .eduflow-tab {
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+body.theme-light .eduflow-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fafafa;
+}
+
+body.theme-light .view-mode-selector button {
+  background: #ffffff;
+  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.theme-light .view-mode-selector button:hover {
+  background: #f5f5f5;
+}
+
+body.theme-light .workspace-sidebar {
+  background: #fafafa;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .upload-section {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .document-item {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .document-item:hover {
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+}
+
+body.theme-light .content-area {
+  background: #ffffff;
+}
+
+body.theme-light select,
+body.theme-light input,
+body.theme-light textarea {
+  background: #ffffff;
+  color: #0d0d0d;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.theme-light select option {
+  background: #ffffff;
+  color: #0d0d0d;
+}
+
+body.theme-light .document-item h4 {
+  color: #0d0d0d !important;
+}
+
+body.theme-light .view-container h2 {
+  color: #0d0d0d !important;
+}
+
+body.theme-light .eduflow-tab h2,
+body.theme-light .eduflow-tab h3,
+body.theme-light .document-item h4 {
+  color: #0d0d0d !important;
+}

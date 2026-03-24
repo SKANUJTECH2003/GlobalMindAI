@@ -82,3 +82,26 @@
   border: none;
   border-radius: 6px;
 }
+
+/* Light Theme Overrides */
+body.theme-light .document-viewer {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .document-content {
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+body.theme-light .page-nav-btn {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+}
+
+body.theme-light .page-nav-btn:hover {
+  background: var(--purple);
+  color: white;
+  border-color: var(--purple);
+}

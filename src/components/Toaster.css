@@ -1,0 +1,87 @@
+/* Toaster Styles - Override react-hot-toast defaults */
+
+/* Base toast styling */
+:global(.react-hot-toast) {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: toastSlideIn 0.3s ease-out !important;
+}
+
+:global(.react-hot-toast.toasted) {
+  display: none;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Success toast */
+:global(.react-hot-toast:has(svg[data-icon="check"])) {
+  border-color: #10b981 !important;
+  border-left: 4px solid #10b981 !important;
+}
+
+:global(.react-hot-toast:has(svg[data-icon="check"]) svg) {
+  color: #10b981 !important;
+}
+
+/* Error toast */
+:global(.react-hot-toast:has(svg[data-icon="error"])) {
+  border-color: #ef4444 !important;
+  border-left: 4px solid #ef4444 !important;
+}
+
+:global(.react-hot-toast:has(svg[data-icon="error"]) svg) {
+  color: #ef4444 !important;
+}
+
+/* Loading toast */
+:global(.react-hot-toast:has(svg[data-icon="loading"])) {
+  border-color: var(--purple, #7c3aed) !important;
+  border-left: 4px solid var(--purple, #7c3aed) !important;
+}
+
+:global(.react-hot-toast:has(svg[data-icon="loading"]) svg) {
+  color: var(--purple, #7c3aed) !important;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Blank/info toast */
+:global(.react-hot-toast:not(:has(svg))) {
+  border-left: 4px solid var(--blue, #3b82f6) !important;
+}
+
+/* Light theme overrides */
+body.theme-light :global(.react-hot-toast) {
+  background: #f5f5f7 !important;
+  color: #1a1a1a !important;
+  border: 1px solid #e0e0e0 !important;
+}
+
+/* Close button styling */
+:global(.react-hot-toast button) {
+  color: var(--text-primary, #ffffff) !important;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+:global(.react-hot-toast button:hover) {
+  opacity: 1;
+}

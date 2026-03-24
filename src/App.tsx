@@ -4,12 +4,16 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { ChatInterface } from './components/ChatInterface';
 import { AnalysisPanel } from './components/AnalysisPanel';
 import { DocumentUpload } from './components/DocumentUpload';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { ToasterProvider } from './components/Toaster';
+import { Settings } from './components/Settings';
 import './styles/App.css';
 
 export function App() {
   const [sdkReady, setSdkReady] = useState(false);
   const [sdkError, setSdkError] = useState<string | null>(null);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     initSDK()
@@ -51,60 +55,76 @@ export function App() {
   }
 
   return (
-    <div className="eduflow-app">
-      {/* Animated Background */}
-      <div className="background-gradient">
-        <div className="gradient-orb orb-1"></div>
-        <div className="gradient-orb orb-2"></div>
-        <div className="gradient-orb orb-3"></div>
-      </div>
+    <ThemeProvider>
+      <ToasterProvider>
+        <div className="eduflow-app">
+          {/* Animated Background */}
+          <div className="background-gradient">
+            <div className="gradient-orb orb-1"></div>
+            <div className="gradient-orb orb-2"></div>
+            <div className="gradient-orb orb-3"></div>
+          </div>
 
-      {/* Main Header */}
-      <header className="app-header">
-        <div className="header-content">
-          <div className="logo-section">
-            <div className="logo-icon">🎓</div>
-            <div className="logo-text">
-              <h1>EduFlow AI</h1>
-              <p>Your Personal Study Companion</p>
+          {/* Main Header */}
+          <header className="app-header">
+            <div className="header-content">
+              <div className="logo-section">
+                <div className="logo-icon">🎓</div>
+                <div className="logo-text">
+                  <h1>EduFlow AI</h1>
+                  <p>Your Personal Study Companion</p>
+                </div>
+              </div>
+              
+              <div className="header-actions">
+                <button 
+                  className={`mode-toggle ${!showAnalysis ? 'active' : ''}`}
+                  onClick={() => setShowAnalysis(false)}
+                  title="Chat with AI"
+                >
+                  💬 Chat
+                </button>
+                <button 
+                  className={`mode-toggle ${showAnalysis ? 'active' : ''}`}
+                  onClick={() => setShowAnalysis(true)}
+                  title="Analyze documents"
+                >
+                  📊 Analysis
+                </button>
+                <button 
+                  className="settings-button"
+                  onClick={() => setShowSettings(true)}
+                  title="Settings"
+                >
+                  ⚙️
+                </button>
+              </div>
             </div>
-          </div>
-          
-          <div className="header-actions">
-            <button 
-              className={`mode-toggle ${!showAnalysis ? 'active' : ''}`}
-              onClick={() => setShowAnalysis(false)}
-            >
-              💬 Chat
-            </button>
-            <button 
-              className={`mode-toggle ${showAnalysis ? 'active' : ''}`}
-              onClick={() => setShowAnalysis(true)}
-            >
-              📊 Analysis
-            </button>
-          </div>
+          </header>
+
+          {/* Main Content */}
+          <main className="app-content">
+            <ErrorBoundary>
+              {!showAnalysis ? (
+                <ChatInterface />
+              ) : (
+                <div className="analysis-layout">
+                  <DocumentUpload />
+                  <AnalysisPanel />
+                </div>
+              )}
+            </ErrorBoundary>
+          </main>
+
+          {/* Floating Help Button */}
+          <button className="floating-help" title="How to use EduFlow AI">
+            <span>?</span>
+          </button>
+
+          {/* Settings Modal */}
+          <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="app-content">
-        <ErrorBoundary>
-          {!showAnalysis ? (
-            <ChatInterface />
-          ) : (
-            <div className="analysis-layout">
-              <DocumentUpload />
-              <AnalysisPanel />
-            </div>
-          )}
-        </ErrorBoundary>
-      </main>
-
-      {/* Floating Help Button */}
-      <button className="floating-help" title="How to use EduFlow AI">
-        <span>?</span>
-      </button>
-    </div>
+      </ToasterProvider>
+    </ThemeProvider>
   );
 }

@@ -131,3 +131,33 @@
     grid-template-rows: auto 1fr;
   }
 }
+
+/* Light Theme Overrides */
+body.theme-light .doubt-destroyer-container {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .doubt-input {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+}
+
+body.theme-light .doubt-input::placeholder {
+  color: #999999;
+}
+
+body.theme-light .answer-card {
+  background: #ffffff;
+  border-color: rgba(124, 58, 237, 0.2);
+}
+
+body.theme-light .submit-button {
+  background: var(--purple);
+  color: white;
+}
+
+body.theme-light .submit-button:hover {
+  opacity: 0.9;
+}

@@ -246,3 +246,32 @@
   font-size: 0.75rem;
   text-transform: uppercase;
 }
+
+/* Light Theme Overrides */
+body.theme-light .ai-output-panel {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .output-content {
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+body.theme-light .code-block {
+  background: rgba(124, 58, 237, 0.05);
+  border-color: rgba(124, 58, 237, 0.2);
+  color: var(--purple);
+}
+
+body.theme-light .output-button {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1a1a;
+}
+
+body.theme-light .output-button:hover {
+  background: var(--purple);
+  color: white;
+  border-color: var(--purple);
+}

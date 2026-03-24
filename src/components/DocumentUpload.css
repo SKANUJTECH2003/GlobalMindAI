@@ -290,3 +290,75 @@
     font-size: 1.2rem;
   }
 }
+
+/* Light Theme Overrides */
+body.theme-light .document-upload {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+body.theme-light .upload-zone {
+  background: #ffffff;
+  border-color: rgba(124, 58, 237, 0.2);
+}
+
+body.theme-light .upload-zone:hover {
+  background: rgba(124, 58, 237, 0.03);
+  border-color: var(--purple);
+}
+
+body.theme-light .upload-zone.dragging {
+  background: rgba(124, 58, 237, 0.1);
+  border-color: var(--purple);
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.2);
+}
+
+body.theme-light .upload-icon {
+  opacity: 0.6;
+  color: #666666;
+}
+
+body.theme-light .file-types {
+  background: rgba(124, 58, 237, 0.1);
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+body.theme-light .upload-spinner {
+  border-color: rgba(124, 58, 237, 0.1);
+  border-top-color: var(--purple);
+}
+
+body.theme-light .upload-tips {
+  background: rgba(124, 58, 237, 0.04);
+  border-color: rgba(124, 58, 237, 0.2);
+}
+
+body.theme-light .document-upload::-webkit-scrollbar {
+  width: 8px;
+}
+
+body.theme-light .document-upload::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+body.theme-light .document-upload::-webkit-scrollbar-thumb {
+  background: var(--purple);
+}
+
+body.theme-light .upload-prompt h2,
+body.theme-light .upload-prompt h3 {
+  color: #0d0d0d !important;
+}
+
+body.theme-light .tips-section {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-light .upload-prompt h2,
+body.theme-light .upload-prompt h3,
+body.theme-light .sample-file-info,
+body.theme-light .upload-prompt {
+  color: #0d0d0d !important;
+}
